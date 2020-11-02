@@ -1,0 +1,2 @@
+exports.default=function(t,e){return t*e};
+//# sourceMappingURL=index.js.map

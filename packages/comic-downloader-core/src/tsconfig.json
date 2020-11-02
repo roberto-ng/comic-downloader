@@ -3,6 +3,9 @@
       "outDir": "../dist/",
       "noImplicitAny": true,
       "target": "es6",
-      "allowJs": true
+      "allowJs": true,
+      "declaration": true,
+      "declarationMap": true,
+      "declarationDir": "../dist/"
     }
 }

@@ -1,13 +1,15 @@
 {
   "name": "comic-downloader-core",
   "version": "1.0.0",
+  "types": "dist/index.d.ts",
   "main": "dist/index.js",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "parcel-bundler": "^1.12.4",
+    "parcel": "^2.0.0-beta.1",
     "typescript": "^4.0.5"
   },
   "dependencies": {
+    "@parcel/transformer-typescript-tsc": "^2.0.0-alpha.3",
     "@types/node": "^14.14.6"
   },
   "scripts": {

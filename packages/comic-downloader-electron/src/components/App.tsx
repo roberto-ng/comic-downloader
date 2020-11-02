@@ -6,7 +6,6 @@ import { mul } from 'comic-downloader-core';
 function App() {
     return (
         <h1>Teste {mul(5, 100)}</h1>
-        //<h1>Oi</h1>
     );
 }
 

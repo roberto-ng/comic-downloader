@@ -1,0 +1,2 @@
+var{hot:e}=require("react-hot-loader"),r=l(require("react-dom")),t=l(require("react"));function l(e){return e&&e.__esModule?e.default:e}var n=l(function(){var r={exports:this};this.__esModule=!0;var l=e(r)((function(){return t.createElement("h1",null,"Hello World!")}));return this.default=l,r.exports}.call({}));r.render(t.createElement(n,null),document.getElementById("root"));
+//# sourceMappingURL=comic-downloader-electron.HASH_REF_dc2d8ee8665b478b9b93aec5c5196f27.js.map
