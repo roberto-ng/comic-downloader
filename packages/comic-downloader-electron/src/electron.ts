@@ -17,9 +17,9 @@ function createWindow() {
     });
 
     mainWindow.loadURL(
-        isDev
-            ? "http://localhost:1234"
-            : `file://${path.join(__dirname, 'index.html')}`
+        isDev ? 
+        "http://localhost:8080/" :
+        `file://${path.join(__dirname, 'index.html')}`
     );
     mainWindow.on('closed', (): any => (mainWindow = null));
 }
