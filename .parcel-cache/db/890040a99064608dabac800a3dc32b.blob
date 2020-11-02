@@ -1,2 +1,0 @@
-exports.mul=function(n,r){return n*r};
-//# sourceMappingURL=index.js.map

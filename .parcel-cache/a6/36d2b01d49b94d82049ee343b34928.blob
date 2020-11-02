@@ -1,1 +1,0 @@
-{"mappings":"YAAO,SAAaA,EAAWC,GAC3B,OAAOD,EAAIC","sources":["./packages/comic-downloader-core/src/index.ts"],"sourcesContent":["export function mul(x: number, y: number): number {\n    return x * y;\n};"],"names":["x","y"],"version":3,"file":"index.js.map"}
