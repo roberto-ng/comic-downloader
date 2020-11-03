@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@parcel/transformer-typescript-tsc": "^2.0.0-alpha.3",
-    "@types/node": "^14.14.6"
+    "@types/node": "^14.14.6",
+    "axios": "^0.21.0"
   },
   "scripts": {
     "dev": "parcel src/index.ts",

@@ -3,4 +3,5 @@ packages/*/dist/*
 !packages/*/dist/.gitkeep
 packages/*/.cache
 packages/*/yarn-error.log
+packages/*/.test-cache
 .parcel-cache
