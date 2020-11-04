@@ -1,0 +1,1 @@
+export { tapasData } from './tapas';

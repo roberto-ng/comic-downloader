@@ -1,6 +1,8 @@
-import { WebsiteData, CrawlingMethod } from '../WebsiteData';
+import { CrawlingMethod } from '../CrawlingMethod';
+import { WebsiteData } from '../WebsiteData';
 
-const tapasData: WebsiteData = {
+export const tapasData: WebsiteData = {
+    name: 'Tapas',
     baseURLs: ['tapas.io'],
     preferedCrawlingMethod: CrawlingMethod.HTML_SCRAPING,
     crawlingMethods: {
@@ -10,5 +12,3 @@ const tapasData: WebsiteData = {
         }
     },
 };
-
-export default tapasData;
