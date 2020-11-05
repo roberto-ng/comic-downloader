@@ -2,6 +2,8 @@ const {
     downloadWebpage, 
     detectWebsite, 
     WebsiteIsNotSupported,
+
+    downloadComic,
 } = require('../dist/index');
 
 
@@ -13,7 +15,15 @@ test('test downloadWebpage', async () => {
 
 test('test detectWebsite', () => {
     const url1 = 'https://duckduckgo.com/aaaaa/1111/gggg';
-    const url2 = 'https://tapas.io/91418973429174/aefaef/'
+    const url2 = 'https://tapas.io/91418973429174/aefaef/';
     expect(() => detectWebsite(url1)).toThrow(WebsiteIsNotSupported);
     expect(() => detectWebsite(url2)).not.toThrow();
+});
+
+test('test downloadComic', async () => {
+    const url = 'https://tapas.io/episode/1123711';
+    const data = await downloadComic(url);
+
+    expect(data.websiteData.name).toBe('Tapas');
+    expect(data.images.length > 0).toBe(true);
 });

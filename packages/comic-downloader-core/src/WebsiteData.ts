@@ -1,5 +1,5 @@
 import "regenerator-runtime/runtime";
-import axios from 'axios';
+import fetch from 'cross-fetch';
 
 import { CrawlingMethod } from './CrawlingMethod';
 import { tapasData } from './websites';
@@ -41,16 +41,17 @@ export class WebsiteIsNotSupported extends Error {
 }
 
 export function getBaseUrl(url: string): string {
-    let urlData = new URL(url);
+    const urlData = new URL(url);
     return urlData.hostname;
 }
 
 export async function downloadWebpage(url: string): Promise<string> {
-    let res = await axios.get(url);
-    let body = await res.data;
+    const res = await fetch(url);
+    const body = await res.text();
     return body;
 }
 
+/** Checks if the website is supported and returns the data about the website */
 export function detectWebsite(url: string): WebsiteData {
     const baseUrl = getBaseUrl(url);
     for (const website of websites) {
