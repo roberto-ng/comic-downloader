@@ -9,7 +9,8 @@ async function readDataFromHtml(
     imgSrcAttribute: string
 ): Promise< Array<string> > {
     const dom = new JSDOM(html);
-    const images = dom.window.document.querySelectorAll(cssQuery);
+    const { document } = dom.window;
+    const images = document.querySelectorAll(cssQuery);
     if (images.length === 0) {
         throw new CssQueryNotFound('Css query returned no results');
     }
