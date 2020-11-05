@@ -17,7 +17,7 @@ async function readDataFromHtml(
         throw new CssQueryNotFound('Css query returned no results');
     }
     
-    const image_urls = []; 
+    const image_urls: Array<string> = []; 
     images.forEach(image => {
         // checks if the element has the attribute we're looking for
         if (image.hasAttribute(imgSrcAttribute)) {
