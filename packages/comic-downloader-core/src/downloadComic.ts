@@ -1,7 +1,9 @@
 import "regenerator-runtime/runtime";
+import fetch from 'cross-fetch';
 import { JSDOM } from 'jsdom';
+
 import { CrawlingMethod } from './CrawlingMethod';
-import { detectWebsite, downloadWebpage, WebsiteData } from './WebsiteData';
+import { detectWebsite, WebsiteData } from './WebsiteData';
 
 async function readDataFromHtml(
     html: string, 
@@ -29,6 +31,12 @@ async function readDataFromHtml(
     });
     
     return image_urls;
+}
+
+export async function downloadWebpage(url: string): Promise<string> {
+    const res = await fetch(url);
+    const body = await res.text();
+    return body;
 }
 
 export async function downloadComic(url: string): Promise<DownloadComicResult> {

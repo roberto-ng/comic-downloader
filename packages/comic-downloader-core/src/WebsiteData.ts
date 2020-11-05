@@ -1,5 +1,4 @@
 import "regenerator-runtime/runtime";
-import fetch from 'cross-fetch';
 
 import { CrawlingMethod } from './CrawlingMethod';
 import { tapasData } from './websites';
@@ -43,12 +42,6 @@ export class WebsiteIsNotSupported extends Error {
 export function getBaseUrl(url: string): string {
     const urlData = new URL(url);
     return urlData.hostname;
-}
-
-export async function downloadWebpage(url: string): Promise<string> {
-    const res = await fetch(url);
-    const body = await res.text();
-    return body;
 }
 
 /** Checks if the website is supported and returns the data about the website */
