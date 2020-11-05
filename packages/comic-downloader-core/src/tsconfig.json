@@ -9,6 +9,6 @@
       "declarationDir": "../dist/",
       "moduleResolution": "node",
       "allowSyntheticDefaultImports": true,
-      "lib": ["es6", "dom", "es2017"]
+      "lib": ["es6", "dom", "es2020"]
     }
 }

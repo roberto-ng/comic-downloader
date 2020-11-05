@@ -1,36 +1,35 @@
 import "regenerator-runtime/runtime";
 import fetch from 'cross-fetch';
-import { JSDOM } from 'jsdom';
+import cheerio from 'cheerio';
 
 import { CrawlingMethod } from './CrawlingMethod';
 import { detectWebsite, WebsiteData } from './WebsiteData';
+import { url } from "inspector";
 
+/** Searches for the data we need in a given HTML string and returns 
+ * an array containing the URLs of all the images in the chapter */
 async function readDataFromHtml(
     html: string, 
     cssQuery: string, 
     imgSrcAttribute: string
 ): Promise< Array<string> > {
-    const dom = new JSDOM(html);
-    const { document } = dom.window;
-    const images = document.querySelectorAll(cssQuery);
-    if (images.length === 0) {
-        throw new CssQueryNotFound('Css query returned no results');
+    const $ = cheerio.load(html);
+    const imageElements = $(cssQuery).toArray();
+    if (imageElements.length === 0) {
+        throw new CssQueryNotFound('CSS query returned no results');
     }
-    
-    const image_urls: Array<string> = []; 
-    images.forEach(image => {
+
+    return imageElements.map(image => {
         // checks if the element has the attribute we're looking for
-        if (image.hasAttribute(imgSrcAttribute)) {
-            const attr = image.getAttribute(imgSrcAttribute);
-            image_urls.push(attr);
+        if (typeof image.attribs[imgSrcAttribute] === 'string') {
+            const imgUrl = image.attribs[imgSrcAttribute];
+            return imgUrl;
         }
         else {
             const errorMsg = `Attribute ${imgSrcAttribute} not found`;
             throw new SrcAttributeNotFound(errorMsg);
         }
-    });
-    
-    return image_urls;
+    });    
 }
 
 export async function downloadWebpage(url: string): Promise<string> {
