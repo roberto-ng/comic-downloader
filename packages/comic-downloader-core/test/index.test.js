@@ -22,8 +22,8 @@ test('test detectWebsite', () => {
 
 test('test downloadComic', async () => {
     const url = 'https://tapas.io/episode/1123711';
-    const data = await downloadComic(url);
+    const res = await downloadComic(url);
 
-    expect(data.websiteData.name).toBe('Tapas');
-    expect(data.images.length > 0).toBe(true);
+    expect(res.websiteData.name).toBe('Tapas');
+    expect(res.images.length > 0).toBe(true);
 });

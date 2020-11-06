@@ -4,33 +4,7 @@ import cheerio from 'cheerio';
 
 import { CrawlingMethod } from './CrawlingMethod';
 import { detectWebsite, WebsiteData } from './WebsiteData';
-import { url } from "inspector";
-
-/** Searches for the data we need in a given HTML string and returns 
- * an array containing the URLs of all the images in the chapter */
-async function readDataFromHtml(
-    html: string, 
-    cssQuery: string, 
-    imgSrcAttribute: string
-): Promise< Array<string> > {
-    const $ = cheerio.load(html);
-    const imageElements = $(cssQuery).toArray();
-    if (imageElements.length === 0) {
-        throw new CssQueryNotFound('CSS query returned no results');
-    }
-
-    return imageElements.map(image => {
-        // checks if the element has the attribute we're looking for
-        if (typeof image.attribs[imgSrcAttribute] === 'string') {
-            const imgUrl = image.attribs[imgSrcAttribute];
-            return imgUrl;
-        }
-        else {
-            const errorMsg = `Attribute ${imgSrcAttribute} not found`;
-            throw new SrcAttributeNotFound(errorMsg);
-        }
-    });    
-}
+import { readDataFromHtml } from './htmlScraping';
 
 export async function downloadWebpage(url: string): Promise<string> {
     const res = await fetch(url);
@@ -45,16 +19,16 @@ export async function downloadComic(url: string): Promise<DownloadComicResult> {
 
     switch (websiteData.preferedCrawlingMethod) {
         case CrawlingMethod.HTML_SCRAPING:
-            const scrapeData = websiteData.crawlingMethods.htmlScraping;
-            const cssQuery = scrapeData.cssQuery;
+            const htmlScraping = websiteData.crawlingMethods.htmlScraping;
+            const cssQuery = htmlScraping.cssQuery;
 
             let imgSrcAttr = defaultImgSrcAttr;
-            if (scrapeData.useCustomImgSrcAttribute) {
-                imgSrcAttr = scrapeData.useCustomImgSrcAttribute;
+            if (htmlScraping.useCustomImgSrcAttribute) {
+                imgSrcAttr = htmlScraping.useCustomImgSrcAttribute;
             }
             
             let html = await downloadWebpage(url);
-            images = await readDataFromHtml(html, cssQuery, imgSrcAttr);
+            images = readDataFromHtml(html, cssQuery, imgSrcAttr);
             break;
 
         default:
