@@ -1,19 +1,17 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { MemoryRouter as Router, Route, Switch } from 'react-router-dom'
 import { hot } from 'react-hot-loader'
-import { downloadComic } from 'comic-downloader-core'
 import { 
     LocaleContext,
     getValidLocale,
 } from '../locales/localeContext'
 import locales from '../locales'
+import Home from '../routes/Home'
 
 const { app } = require('electron').remote;
 
 function App() {
     const [locale, setLocale] = useState<string>('en');
-    const [siteName, setSiteName] = useState<string>('');
-    const [imageLinks, setImageLinks] = useState<string[]>([]);
-    const [text, setText] = useState<string>('Downloading...');
 
     /*
     useEffect(() => {
@@ -32,7 +30,6 @@ function App() {
 
     useEffect(() => {
         // get system locale
-        console.log(typeof app)
         const newLocale = app.getLocale();
         setLocale(getValidLocale(newLocale));
     }, []);
@@ -46,14 +43,15 @@ function App() {
         changeLocale,
     }), [locale]);
 
-    const currentLocale = locales[locale];
+    const messages = locales[locale];
 
     return (
         <LocaleContext.Provider value={value}>
-            <p>Testing!!!</p>
-            <button>
-                {currentLocale.downloadChapter}
-            </button>
+            <Router>
+                <Switch>
+                    <Route exact path="/" component={Home} />
+                </Switch>
+            </Router>
         </LocaleContext.Provider>
     );
 }
