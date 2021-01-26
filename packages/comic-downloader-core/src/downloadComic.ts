@@ -1,6 +1,5 @@
 import "regenerator-runtime/runtime";
 import fetch from 'cross-fetch';
-import cheerio from 'cheerio';
 
 import { CrawlingMethod } from './CrawlingMethod';
 import { detectWebsite, WebsiteData } from './WebsiteData';
