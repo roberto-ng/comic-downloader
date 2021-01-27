@@ -1,24 +1,42 @@
 import React, { useState } from 'react'
+import { withRouter } from 'react-router-dom'
 import { LocaleContext } from '../locales/localeContext'
 import { downloadComic } from 'comic-downloader-core'
 import locales from '../locales'
 
-export default function Home() {
+const { dialog, getCurrentWindow } = require('electron').remote;
+
+export default withRouter(({ history }) => {
     const [url, setUrl] = useState<string>('');
-    const [siteName, setSiteName] = useState<string>('');
-    const [imageLinks, setImageLinks] = useState<string[]>([]);
-    const [errorMsg, setErrorMsg] = useState<string>('');
+    const [outputDir, setOutputDir] = useState<string>('');
 
     const handleDownloadChapterClick = () => {
-        // clear the error message
-        setErrorMsg('');
+        const encodedUrl = encodeURIComponent(url);
+        const encodedDir = encodeURIComponent(outputDir);
 
-        downloadComic(url)
-            .then(res => {
-                setSiteName(res.websiteData.name);
-                setImageLinks(res.images);
-            })
-            .catch(() => setErrorMsg('Error'));
+        history.push(`/downloadinfo/${encodedUrl}/${encodedDir}`);
+    };
+
+    const handleSelectFolderClick = async () => {
+        const mainWindow = getCurrentWindow();
+        const result = await dialog.showOpenDialog(mainWindow, {
+            properties: ['openDirectory']
+        });
+
+        if (result.filePaths.length === 0) {
+            return;
+        }
+
+        setOutputDir(result.filePaths[0]);
+    };
+
+    const outputDirText = () => {
+        if (outputDir === '') {
+            return <label>Save at: no folder selected </label>
+        }
+        else {
+            return <label>Save at: {outputDir} </label>
+        }
     };
 
     return (
@@ -36,10 +54,17 @@ export default function Home() {
                         />
                         <br/>
 
+                        {outputDirText()}
+                        <button onClick={handleSelectFolderClick}>
+                            Select folder
+                        </button>
+                        <br/>
+
                         <button onClick={handleDownloadChapterClick}>
                             {messages.downloadChapter}
                         </button>
 
+                        {/*
                         {(errorMsg.trim().length > 0) && (
                             <h2>{errorMsg}</h2>
                         )}
@@ -53,9 +78,19 @@ export default function Home() {
                                 ))}
                             </>
                         )}
+
+                        */}
                     </>
-                )
+                );
             }}
         </LocaleContext.Consumer>
     );
+})
+
+declare module 'react' {
+    interface HTMLAttributes<T> extends AriaAttributes, DOMAttributes<T> {
+      // extends React's HTMLAttributes
+      directory?: string;
+      webkitdirectory?: string;
+    }
 }

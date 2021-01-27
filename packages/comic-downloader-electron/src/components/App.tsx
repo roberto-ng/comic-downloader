@@ -7,26 +7,12 @@ import {
 } from '../locales/localeContext'
 import locales from '../locales'
 import Home from '../routes/Home'
+import DownloadInfo from '../routes/DownloadInfo'
 
 const { app } = require('electron').remote;
 
 function App() {
     const [locale, setLocale] = useState<string>('en');
-
-    /*
-    useEffect(() => {
-        const url = 'https://tapas.io/episode/1123711';
-        downloadComic(url)
-            .then(res => {
-                const name = res.websiteData.name;
-                const pageNumber = res.images.length;
-                setSiteName(name);
-                setImageLinks(res.images);
-                setText(`${name}\nNumber of pages: ${pageNumber}`);
-            })
-            .catch(() => setText('Error'));
-    }, []);
-    */
 
     useEffect(() => {
         // get system locale
@@ -50,6 +36,10 @@ function App() {
             <Router>
                 <Switch>
                     <Route exact path="/" component={Home} />
+                    <Route 
+                        path="/downloadinfo/:url/:outputDir" 
+                        component={DownloadInfo} 
+                    />
                 </Switch>
             </Router>
         </LocaleContext.Provider>
