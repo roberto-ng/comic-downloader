@@ -112,7 +112,6 @@ export default function DownloadInfo() {
 
     useEffect(() => {
         // checks if all pages have been downloaded
-        console.log('length ' + downloadStates.length)
         if (downloadStates.length === 0) {
             return;
         }
