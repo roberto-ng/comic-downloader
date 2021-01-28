@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { withRouter } from 'react-router-dom'
 import { LocaleContext } from '../locales/localeContext'
 import { downloadComic } from 'comic-downloader-core'
@@ -7,6 +7,8 @@ import locales from '../locales'
 const { dialog, getCurrentWindow } = require('electron').remote;
 
 export default withRouter(({ history }) => {
+    const { locale } = useContext(LocaleContext);
+
     const [url, setUrl] = useState<string>('');
     const [outputDir, setOutputDir] = useState<string>('');
 
@@ -30,60 +32,31 @@ export default withRouter(({ history }) => {
         setOutputDir(result.filePaths[0]);
     };
 
-    const outputDirText = () => {
-        if (outputDir === '') {
-            return <label>Save at: no folder selected </label>
-        }
-        else {
-            return <label>Save at: {outputDir} </label>
-        }
-    };
-
+    const messages = locales[locale];
     return (
-        <LocaleContext.Consumer>
-            {({ locale }) => {
-                const messages = locales[locale];
+        <>
+            <label>{messages.chapterUrl}</label>
+            <input 
+                type="text"
+                value={url}
+                onChange={e => setUrl(e.target.value)} 
+            />
+            <br/>
 
-                return (
-                    <>
-                        <label>{messages.chapterUrl}</label>
-                        <input 
-                            type="text"
-                            value={url}
-                            onChange={e => setUrl(e.target.value)} 
-                        />
-                        <br/>
+            {(outputDir === '') ? (
+                <label>{messages.saveInNoFolder}</label>
+            ) : (
+                <label>{messages.saveIn.replace('{outputDir}', outputDir)}</label>
+            )}
+            <button onClick={handleSelectFolderClick}>
+                {messages.selectFolder}
+            </button>
+            <br/>
 
-                        {outputDirText()}
-                        <button onClick={handleSelectFolderClick}>
-                            Select folder
-                        </button>
-                        <br/>
-
-                        <button onClick={handleDownloadChapterClick}>
-                            {messages.downloadChapter}
-                        </button>
-
-                        {/*
-                        {(errorMsg.trim().length > 0) && (
-                            <h2>{errorMsg}</h2>
-                        )}
-
-                        {(imageLinks.length > 0) && (
-                            <>
-                                <p>{siteName}</p>
-
-                                {imageLinks.map(imageLink => (
-                                    <p>{imageLink}</p>
-                                ))}
-                            </>
-                        )}
-
-                        */}
-                    </>
-                );
-            }}
-        </LocaleContext.Consumer>
+            <button onClick={handleDownloadChapterClick}>
+                {messages.downloadChapter}
+            </button>
+        </>
     );
 })
 

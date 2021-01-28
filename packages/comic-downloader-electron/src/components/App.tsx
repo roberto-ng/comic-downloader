@@ -37,7 +37,7 @@ function App() {
                 <Switch>
                     <Route exact path="/" component={Home} />
                     <Route 
-                        path="/downloadinfo/:url/:outputDir" 
+                        path="/downloadinfo/:encodedUrl/:encodedOutputDir" 
                         component={DownloadInfo} 
                     />
                 </Switch>

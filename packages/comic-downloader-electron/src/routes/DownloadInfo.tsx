@@ -1,43 +1,61 @@
 import { promises as fs, createWriteStream } from 'fs'
-import util from 'util'
 import http from 'http'
 import https from 'https'
 import path from 'path'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { LocaleContext } from '../locales/localeContext'
-import locales from '../locales'
 import { downloadComic } from 'comic-downloader-core'
+import { LocaleContext, getValidLocale } from '../locales/localeContext'
+import locales from '../locales'
 
-const streamPipeline = util.promisify(require('stream').pipeline);
+const { app } = require('electron').remote;
 
 interface Params {
-    url: string;
-    outputDir: string;
+    encodedUrl: string;
+    encodedOutputDir: string;
+}
+
+enum DOWNLOAD_STATE {
+    DOWNLOADING,
+    SUCCESS,
+    ERROR,
 }
 
 export default function DownloadInfo() {
-    const { url, outputDir } = useParams<Params>();
+    const { encodedUrl, encodedOutputDir } = useParams<Params>();
+    const { locale } = useContext(LocaleContext);
     
+    const [url, setUrl] = useState<string>('');
+    const [outputDir, setOutputDir] = useState<string>('');
     const [siteName, setSiteName] = useState<string>('');
     const [imageLinks, setImageLinks] = useState<string[]>([]);
-    const [finishedDownloads, setFinishedDownloads] = useState<string[]>([]);
+    const [downloadStates, setDownloadStates] = useState<DOWNLOAD_STATE[]>([]);
+    const [areAllDownloadsComplete, setAreAllDownloadsComplete] = useState<boolean>(false);
     const [logs, setLogs] = useState<string[]>([]);
     const [errorMsg, setErrorMsg] = useState<string>('');
 
     const startDownload = async () => {
         setErrorMsg('');
-
+        const messages = locales[locale];
+        
         try {
-            const decodedUrl = decodeURIComponent(url);
+            const decodedUrl = decodeURIComponent(encodedUrl);
+            const decodedOutputDir = decodeURIComponent(encodedOutputDir);
+            
             const res = await downloadComic(decodedUrl);
             setSiteName(res.websiteData.name);
             setImageLinks(res.images);
+            
+            const localLogs: string[] = new Array();
+            const localDownloadStates: DOWNLOAD_STATE[] = new Array(res.images.length);
+            for (let i = 0; i < localDownloadStates.length; i++) {
+                localDownloadStates[i] = DOWNLOAD_STATE.DOWNLOADING;
+            }
 
             for (const imageLink of res.images) {
                 const i = res.images.indexOf(imageLink);
 
-                const numberOfDigits = `${res.images.length}`.length; 
+                const numberOfDigits = String(res.images.length).length; 
                 const pageNumber = `${i+1}`.padStart(numberOfDigits, '0');
                 let fileName = `${pageNumber}`;
                 const fileExtension = imageLink.split('.').pop();
@@ -45,80 +63,113 @@ export default function DownloadInfo() {
                     fileName = `${pageNumber}.${fileExtension}`;
                 }
 
-                const decodedOutputDir = decodeURIComponent(outputDir);
                 const fullPath = path.join(decodedOutputDir, fileName);
                 downloadFile(imageLink, fullPath)
-                    .then(() => {
-                        const log = `Page ${i+1} saved as ${fullPath}`;
-                        console.log(log);
+                    .then((url) => {
+                        const index = res.images.indexOf(url);
+
+                        const log = messages.pageDownloadedSuccessfully
+                            .replace('{fileName}', fileName);
                         
-                        // add log to logs array
+                        localLogs.push(log);
                         setLogs([
-                            ...logs,
-                            log,
+                            ...localLogs,
                         ]);
-        
-                        setFinishedDownloads([
-                            ...finishedDownloads,
-                            imageLink,
+                        
+                        localDownloadStates[index] = DOWNLOAD_STATE.SUCCESS;
+                        setDownloadStates([
+                            ...localDownloadStates,
                         ]);
                     })
-                    .catch(e => {
+                    .catch(([url, e]) => {
+                        const index = res.images.indexOf(url);
+
                         console.warn(e);
         
+                        localLogs.push(String(e));
                         setLogs([
-                            ...logs,
-                            String(e),
+                            ...localLogs,
                         ]);
-        
-                        setFinishedDownloads([
-                            ...finishedDownloads,
-                            imageLink,
+
+                        localDownloadStates[index] = DOWNLOAD_STATE.ERROR;
+                        setDownloadStates([
+                            ...localDownloadStates,
                         ]);
                     });
             }
         }
         catch (e) {
-            setErrorMsg('Error')
+            setErrorMsg(String(e))
         }
     };
 
     useEffect(() => {
-        console.log('url ' + url);
-        console.log('dir ' + outputDir);
+        setUrl(decodeURIComponent(encodedUrl))
+        setOutputDir(decodeURIComponent(encodedOutputDir));
 
         startDownload();
     }, []);
+
+    useEffect(() => {
+        // checks if all pages have been downloaded
+        console.log('length ' + downloadStates.length)
+        if (downloadStates.length === 0) {
+            return;
+        }
+        
+        let isFinished = true;
+        const numberOfPages = imageLinks.length;
+        for (const downloadState of downloadStates) {
+            if (downloadState === DOWNLOAD_STATE.DOWNLOADING) {
+                isFinished = false;
+            }
+        }
+
+        setAreAllDownloadsComplete(isFinished);
+    }, [downloadStates])
     
+    const messages = locales[locale];
+
     return (
-        <LocaleContext.Consumer>
-            {({ locale }) => {
-                const messages = locales[locale];
-                
-                return (
-                    <>
-                        <p>Url: {decodeURIComponent(url)}</p>
-                        <p>Dir: {decodeURIComponent(outputDir)}</p>
-                        <h3>{errorMsg}</h3>
-                    </>
-                );
-            }}
-        </LocaleContext.Consumer>
+        <>
+            <p>Url: {decodeURIComponent(url)}</p>
+            <p>Dir: {decodeURIComponent(outputDir)}</p>
+            <h3>{errorMsg}</h3>
+            
+            <div 
+                className="logs-container"
+                style={{ 
+                    overflowY: 'scroll',
+                    backgroundColor: 'black',
+                    color: 'white', 
+                    height: '300px'
+                }}
+            >
+                {logs.map((log, i) => (
+                    <p key={i}>{log}</p>
+                ))}
+            </div>
+            
+            {(areAllDownloadsComplete) && (
+                <p>Finished!!</p>
+            )}
+        </>
     );
 }
 
-async function downloadFile(url: string, fileName: string) {
+async function downloadFile(url: string, fileName: string): Promise<string> {
     const stream = createWriteStream(fileName);
     const response = await request(url);
-    response.pipe(stream);
+    response.pipe(stream);    
+    return url;
 }
 
 async function request(url: string): Promise<http.IncomingMessage> {
     const protocol = url.startsWith('https://') ? https : http;
 
     return new Promise ((resolve, reject) => {
-        const request = protocol.get(url)
+        protocol.get(url)
             .on('response', (response) => resolve(response))
-            .on('error', (e) => reject(e.message));
+            .on('error', (e) => reject([url, e.message]));
     });
 }
