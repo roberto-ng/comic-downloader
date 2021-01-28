@@ -18,7 +18,8 @@
     "cheerio": "^1.0.0-rc.3",
     "cross-fetch": "^3.0.6",
     "jsdom": "^16.4.0",
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.1",
+    "react-native-cheerio": "^1.0.0-rc.4"
   },
   "scripts": {
     "dev": "parcel src/index.ts",

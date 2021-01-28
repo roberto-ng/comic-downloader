@@ -3,7 +3,7 @@ import http from 'http'
 import https from 'https'
 import path from 'path'
 import React, { useContext, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { downloadComic } from 'comic-downloader-core'
 import { LocaleContext, getValidLocale } from '../locales/localeContext'
 import locales from '../locales'
@@ -125,7 +125,7 @@ export default function DownloadInfo() {
         }
 
         setAreAllDownloadsComplete(isFinished);
-    }, [downloadStates])
+    }, [downloadStates]);
     
     const messages = locales[locale];
 
@@ -150,7 +150,10 @@ export default function DownloadInfo() {
             </div>
             
             {(areAllDownloadsComplete) && (
-                <p>Finished!!</p>
+                <>
+                    <p>Finished!!</p>
+                    <Link to="/">Go back</Link>
+                </>
             )}
         </>
     );
