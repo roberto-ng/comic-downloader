@@ -2,7 +2,7 @@ import { promises as fs, createWriteStream } from 'fs'
 import http from 'http'
 import https from 'https'
 import path from 'path'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { downloadComic } from 'comic-downloader-core'
 import { LocaleContext, getValidLocale } from '../locales/localeContext'
@@ -33,19 +33,27 @@ export default function DownloadInfo() {
     const [areAllDownloadsComplete, setAreAllDownloadsComplete] = useState<boolean>(false);
     const [logs, setLogs] = useState<string[]>([]);
     const [errorMsg, setErrorMsg] = useState<string>('');
+    const [completeDownloadsNumber, setCompleteDownloadsNumber] = useState<number>(0);
+
+    const refLogContainer = useRef<HTMLDivElement>(null);
 
     const startDownload = async () => {
         setErrorMsg('');
         const messages = locales[locale];
         
         try {
-            const decodedUrl = decodeURIComponent(encodedUrl);
+            let decodedUrl = decodeURIComponent(encodedUrl);
             const decodedOutputDir = decodeURIComponent(encodedOutputDir);
+
+            if (!decodedUrl.startsWith('http')) {
+                decodedUrl = `http://${decodedUrl}`;
+            }
             
             const res = await downloadComic(decodedUrl);
             setSiteName(res.websiteData.name);
             setImageLinks(res.images);
             
+            let localCompleteDownloads = 0; 
             const localLogs: string[] = new Array();
             const localDownloadStates: DOWNLOAD_STATE[] = new Array(res.images.length);
             for (let i = 0; i < localDownloadStates.length; i++) {
@@ -80,6 +88,9 @@ export default function DownloadInfo() {
                         setDownloadStates([
                             ...localDownloadStates,
                         ]);
+
+                        localCompleteDownloads += 1;
+                        setCompleteDownloadsNumber(localCompleteDownloads);
                     })
                     .catch(([url, e]) => {
                         const index = res.images.indexOf(url);
@@ -95,6 +106,9 @@ export default function DownloadInfo() {
                         setDownloadStates([
                             ...localDownloadStates,
                         ]);
+
+                        localCompleteDownloads += 1;
+                        setCompleteDownloadsNumber(localCompleteDownloads);
                     });
             }
         }
@@ -117,7 +131,6 @@ export default function DownloadInfo() {
         }
         
         let isFinished = true;
-        const numberOfPages = imageLinks.length;
         for (const downloadState of downloadStates) {
             if (downloadState === DOWNLOAD_STATE.DOWNLOADING) {
                 isFinished = false;
@@ -126,6 +139,16 @@ export default function DownloadInfo() {
 
         setAreAllDownloadsComplete(isFinished);
     }, [downloadStates]);
+
+    useEffect(() => {
+        // scroll down when there is a new log
+        if (refLogContainer === null || logs.length === 0) {
+            return;
+        }
+
+        const logContainer = refLogContainer.current;
+        logContainer.scrollTop = logContainer.scrollHeight;
+    }, [logs])
     
     const messages = locales[locale];
 
@@ -135,13 +158,22 @@ export default function DownloadInfo() {
             <p>Dir: {decodeURIComponent(outputDir)}</p>
             <h3>{errorMsg}</h3>
             
+            {(imageLinks.length > 0) ? (
+                <h2>
+                    {completeDownloadsNumber}/{imageLinks.length}
+                </h2>
+            ) : (
+                <h2>Fetching chapter data...</h2>
+            )}
             <div 
+                ref={refLogContainer}
                 className="logs-container"
                 style={{ 
                     overflowY: 'scroll',
                     backgroundColor: 'black',
                     color: 'white', 
-                    height: '300px'
+                    height: '300px',
+                    textAlign: 'start',
                 }}
             >
                 {logs.map((log, i) => (
@@ -154,6 +186,10 @@ export default function DownloadInfo() {
                     <p>Finished!!</p>
                     <Link to="/">Go back</Link>
                 </>
+            )}
+
+            {(errorMsg.trim().length > 0 && !areAllDownloadsComplete) && (
+                <Link to="/">Go back</Link>
             )}
         </>
     );
