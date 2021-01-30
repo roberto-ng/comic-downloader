@@ -4,7 +4,14 @@ import https from 'https'
 import path from 'path'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { downloadComic } from 'comic-downloader-core'
+import styled from 'styled-components'
+import Accordion from '@material-ui/core/Accordion'
+import AccordionSummary from '@material-ui/core/AccordionSummary'
+import AccordionDetails from '@material-ui/core/AccordionDetails'
+import Typography from '@material-ui/core/Typography'
+import { Button, LinearProgress } from '@material-ui/core'
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
+import { downloadComic, WebsiteIsNotSupported } from 'comic-downloader-core'
 import { LocaleContext, getValidLocale } from '../locales/localeContext'
 import locales from '../locales'
 
@@ -34,6 +41,7 @@ export default function DownloadInfo() {
     const [logs, setLogs] = useState<string[]>([]);
     const [errorMsg, setErrorMsg] = useState<string>('');
     const [completeDownloadsNumber, setCompleteDownloadsNumber] = useState<number>(0);
+    const [isWebsiteSupported, setIsWebsiteSupported] = useState<boolean>(true);
 
     const refLogContainer = useRef<HTMLDivElement>(null);
 
@@ -52,6 +60,7 @@ export default function DownloadInfo() {
             const res = await downloadComic(decodedUrl);
             setSiteName(res.websiteData.name);
             setImageLinks(res.images);
+            setIsWebsiteSupported(true);
             
             let localCompleteDownloads = 0; 
             const localLogs: string[] = new Array();
@@ -113,7 +122,11 @@ export default function DownloadInfo() {
             }
         }
         catch (e) {
-            setErrorMsg(String(e))
+            if (e instanceof WebsiteIsNotSupported) {
+                setIsWebsiteSupported(false);
+            }
+
+            setErrorMsg(String(e));
         }
     };
 
@@ -152,44 +165,95 @@ export default function DownloadInfo() {
     
     const messages = locales[locale];
 
+    if (errorMsg.trim().length > 0) {
+        // show error message
+        return (
+            <div style={{ textAlign: 'center' }}>
+                {(!isWebsiteSupported) ? (
+                    <h3>{messages.websiteNotSupported}</h3>
+                ) : (
+                    <h3>{errorMsg}</h3>
+                )}
+
+                <Link to="/">
+                    <Button 
+                        variant="contained"
+                        color="primary"
+                    >
+                        {messages.goBack}
+                    </Button>
+                </Link>
+            </div>
+        );
+    }
+
+    const progress = (100 * completeDownloadsNumber) / imageLinks.length;
+
     return (
-        <>
-            <p>Url: {decodeURIComponent(url)}</p>
-            <p>Dir: {decodeURIComponent(outputDir)}</p>
-            <h3>{errorMsg}</h3>
-            
+        <>            
             {(imageLinks.length > 0) ? (
-                <h2>
-                    {completeDownloadsNumber}/{imageLinks.length}
-                </h2>
+                <ProgressContainer>
+                    <p>
+                        {messages.downloadingChapterFrom.replace('{siteName}', siteName)}
+                    </p>
+                    <h3>
+                        {completeDownloadsNumber}/{imageLinks.length}
+                    </h3>
+                    <div className="progress-bar">
+                        <LinearProgress 
+                            variant="determinate"
+                            color="primary" 
+                            value={progress}
+                        />
+                    </div>
+                </ProgressContainer>
             ) : (
                 <h2>Fetching chapter data...</h2>
             )}
-            <div 
-                ref={refLogContainer}
-                className="logs-container"
-                style={{ 
-                    overflowY: 'scroll',
-                    backgroundColor: 'black',
-                    color: 'white', 
-                    height: '300px',
-                    textAlign: 'start',
-                }}
-            >
-                {logs.map((log, i) => (
-                    <p key={i}>{log}</p>
-                ))}
-            </div>
             
+            <div style={{ margin: '10px' }}>
+                <Accordion>
+                    <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="panel1a-content"
+                    id="panel1a-header"
+                    >
+                    <Typography>Details</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <div 
+                            ref={refLogContainer}
+                            style={{ 
+                                maxHeight: '300px',
+                                overflowY: 'scroll',
+                                width: '100%', 
+                            }}
+                        >
+                            {logs.map((log, i) => (
+                                <Typography key={i}>
+                                    {log}
+                                </Typography>
+                            ))}
+                        </div>
+                    </AccordionDetails>
+                </Accordion>
+            </div> 
+
             {(areAllDownloadsComplete) && (
-                <>
-                    <p>Finished!!</p>
-                    <Link to="/">Go back</Link>
-                </>
+                <div style={{ textAlign: 'center' }}>
+                    <Link to="/">
+                        <Button 
+                            variant="contained"
+                            color="primary"
+                        >
+                            {messages.goBack}
+                        </Button>
+                    </Link>
+                </div>
             )}
 
             {(errorMsg.trim().length > 0 && !areAllDownloadsComplete) && (
-                <Link to="/">Go back</Link>
+                <Link to="/">{messages.goBack}</Link>
             )}
         </>
     );
@@ -211,3 +275,17 @@ async function request(url: string): Promise<http.IncomingMessage> {
             .on('error', (e) => reject([url, e.message]));
     });
 }
+
+const ProgressContainer = styled.div`
+    text-align: center;
+
+    .progress-bar {
+        margin-left: 30px;
+        margin-right: 30px;
+    }
+
+    p {
+        margin-top: 30px;
+        font-size: 18px;
+    }
+`;

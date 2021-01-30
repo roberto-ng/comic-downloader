@@ -1,7 +1,9 @@
 import React, { useContext, useState } from 'react'
+import styled from 'styled-components'
+import Button from '@material-ui/core/Button'
+import TextField from '@material-ui/core/TextField';
 import { withRouter } from 'react-router-dom'
 import { LocaleContext } from '../locales/localeContext'
-import { downloadComic } from 'comic-downloader-core'
 import locales from '../locales'
 
 const { dialog, getCurrentWindow } = require('electron').remote;
@@ -13,16 +15,33 @@ export default withRouter(({ history }) => {
     const [outputDir, setOutputDir] = useState<string>('');
 
     const handleDownloadChapterClick = () => {
-        const encodedUrl = encodeURIComponent(url);
-        const encodedDir = encodeURIComponent(outputDir);
+        if (url.trim().length === 0) {
+            window.alert('You forgot to enter the chapter URL.');
+            return;
+        }
+        if (outputDir.trim().length === 0) {
+            window.alert('You forgot to choose a folder');
+            return;
+        }
+
+        const encodedUrl = encodeURIComponent(url.trim());
+        const encodedDir = encodeURIComponent(outputDir.trim());
 
         history.push(`/downloadinfo/${encodedUrl}/${encodedDir}`);
     };
 
     const handleSelectFolderClick = async () => {
         const mainWindow = getCurrentWindow();
+
+        let defaultPath = undefined;
+        if (outputDir.trim().length > 0) {
+            // set the last selected folder as the default path
+            defaultPath = outputDir.trim();
+        }
+
         const result = await dialog.showOpenDialog(mainWindow, {
-            properties: ['openDirectory']
+            properties: ['openDirectory'],
+            defaultPath: defaultPath,
         });
 
         if (result.filePaths.length === 0) {
@@ -34,12 +53,14 @@ export default withRouter(({ history }) => {
 
     const messages = locales[locale];
     return (
-        <>
-            <label>{messages.chapterUrl}</label>
-            <input 
+        <HomeContainer>
+            <TextField 
+                label={messages.chapterUrl} 
+                variant="outlined" 
                 type="text"
                 value={url}
                 onChange={e => setUrl(e.target.value)} 
+                style={{ marginBottom: '20px' }}
             />
             <br/>
 
@@ -48,17 +69,32 @@ export default withRouter(({ history }) => {
             ) : (
                 <label>{messages.saveIn.replace('{outputDir}', outputDir)}</label>
             )}
-            <button onClick={handleSelectFolderClick}>
+            <br/>
+            <Button 
+                variant="outlined"
+                color="primary"
+                onClick={handleSelectFolderClick}
+            >
                 {messages.selectFolder}
-            </button>
+            </Button>
             <br/>
 
-            <button onClick={handleDownloadChapterClick}>
+            <Button 
+                variant="contained"
+                color="primary"
+                onClick={handleDownloadChapterClick}
+                style={{ marginTop: '20px' }}
+            >
                 {messages.downloadChapter}
-            </button>
-        </>
+            </Button>
+        </HomeContainer>
     );
-})
+});
+
+const HomeContainer = styled.div`
+    margin-top: 40px;
+    text-align: center;
+`;
 
 declare module 'react' {
     interface HTMLAttributes<T> extends AriaAttributes, DOMAttributes<T> {
