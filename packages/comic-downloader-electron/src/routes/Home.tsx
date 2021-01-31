@@ -3,16 +3,20 @@ import styled from 'styled-components'
 import Button from '@material-ui/core/Button'
 import TextField from '@material-ui/core/TextField';
 import { withRouter } from 'react-router-dom'
-import { LocaleContext } from '../locales/localeContext'
+import { localeContext } from '../locales/localeContext'
+import { chapterContext } from '../ChapterContext'
 import locales from '../locales'
 
 const { dialog, getCurrentWindow } = require('electron').remote;
 
 export default withRouter(({ history }) => {
-    const { locale } = useContext(LocaleContext);
-
-    const [url, setUrl] = useState<string>('');
-    const [outputDir, setOutputDir] = useState<string>('');
+    const { locale } = useContext(localeContext);
+    const { 
+        url, 
+        outputDir, 
+        changeUrl, 
+        changeOutputDir 
+    } = useContext(chapterContext);
 
     const handleDownloadChapterClick = () => {
         if (url.trim().length === 0) {
@@ -48,7 +52,7 @@ export default withRouter(({ history }) => {
             return;
         }
 
-        setOutputDir(result.filePaths[0]);
+        changeOutputDir(result.filePaths[0]);
     };
 
     const messages = locales[locale];
@@ -59,7 +63,7 @@ export default withRouter(({ history }) => {
                 variant="outlined" 
                 type="text"
                 value={url}
-                onChange={e => setUrl(e.target.value)} 
+                onChange={e => changeUrl(e.target.value)} 
                 style={{ marginBottom: '20px' }}
             />
             <br/>

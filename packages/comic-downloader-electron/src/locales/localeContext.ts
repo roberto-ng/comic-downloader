@@ -1,14 +1,11 @@
 import React, { Context } from 'react'
 
-interface ILocaleContext {
+interface LocaleContext {
     locale: string;
     changeLocale: (newLocale: string) => void;
 }
 
-export const LocaleContext: Context<ILocaleContext> = React.createContext({
-    locale: 'en',
-    changeLocale: (newLocale: string) => {},
-});
+export const localeContext: Context<LocaleContext> = React.createContext(null);
 
 export function getValidLocale(locale: string): string {
     if (locale === 'pt' || locale.startsWith('pt-')) {

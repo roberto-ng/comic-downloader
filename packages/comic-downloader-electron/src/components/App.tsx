@@ -4,9 +4,10 @@ import { hot } from 'react-hot-loader'
 import { createMuiTheme } from '@material-ui/core/styles'
 import { purple } from '@material-ui/core/colors'
 import { 
-    LocaleContext,
+    localeContext,
     getValidLocale,
 } from '../locales/localeContext'
+import { chapterContext } from '../ChapterContext'
 import locales from '../locales'
 import Home from '../routes/Home'
 import DownloadInfo from '../routes/DownloadInfo'
@@ -22,6 +23,8 @@ const theme = createMuiTheme({
 
 function App() {
     const [locale, setLocale] = useState<string>('en');
+    const [url, setUrl] = useState<string>('');
+    const [outputDir, setOutputDir] = useState<string>('');
 
     useEffect(() => {
         // get system locale
@@ -33,26 +36,43 @@ function App() {
         setLocale(getValidLocale(newLocale));
     };
 
-    const value = useMemo(() => ({
+    const localeContextValue = useMemo(() => ({
         locale,
         changeLocale,
     }), [locale]);
+
+    const changeUrl = (newUrl: string) => {
+        setUrl(newUrl);
+    };
+
+    const changeOutputDir = (dir: string) => {
+        setOutputDir(dir);
+    };
+
+    const chapterContextValue = {
+        url,
+        outputDir,
+        changeUrl,
+        changeOutputDir,
+    };
 
     const messages = locales[locale];
 
     return (
         <ThemeProvider theme={theme}>
-            <LocaleContext.Provider value={value}>
-                <Router>
-                    <Switch>
-                        <Route exact path="/" component={Home} />
-                        <Route 
-                            path="/downloadinfo/:encodedUrl/:encodedOutputDir" 
-                            component={DownloadInfo} 
-                        />
-                    </Switch>
-                </Router>
-            </LocaleContext.Provider>
+            <localeContext.Provider value={localeContextValue}>
+                <chapterContext.Provider value={chapterContextValue}>
+                    <Router>
+                        <Switch>
+                            <Route exact path="/" component={Home} />
+                            <Route 
+                                path="/downloadinfo/:encodedUrl/:encodedOutputDir" 
+                                component={DownloadInfo} 
+                            />
+                        </Switch>
+                    </Router>
+                </chapterContext.Provider>
+            </localeContext.Provider>
         </ThemeProvider>
     );
 }

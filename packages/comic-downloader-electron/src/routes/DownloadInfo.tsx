@@ -12,7 +12,7 @@ import Typography from '@material-ui/core/Typography'
 import { Button, LinearProgress } from '@material-ui/core'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import { downloadComic, WebsiteIsNotSupported } from 'comic-downloader-core'
-import { LocaleContext, getValidLocale } from '../locales/localeContext'
+import { localeContext, getValidLocale } from '../locales/localeContext'
 import locales from '../locales'
 
 const { app } = require('electron').remote;
@@ -30,7 +30,7 @@ enum DOWNLOAD_STATE {
 
 export default function DownloadInfo() {
     const { encodedUrl, encodedOutputDir } = useParams<Params>();
-    const { locale } = useContext(LocaleContext);
+    const { locale } = useContext(localeContext);
     
     const [url, setUrl] = useState<string>('');
     const [outputDir, setOutputDir] = useState<string>('');
@@ -208,7 +208,9 @@ export default function DownloadInfo() {
                     </div>
                 </ProgressContainer>
             ) : (
-                <h2>Fetching chapter data...</h2>
+                <h2 style={{ textAlign: 'center' }}>
+                    Fetching chapter data...
+                </h2>
             )}
             
             <div style={{ margin: '10px' }}>
