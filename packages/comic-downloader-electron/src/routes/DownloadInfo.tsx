@@ -174,7 +174,10 @@ export default function DownloadInfo() {
     if (errorMsg.trim().length > 0) {
         // show error message
         return (
-            <div style={{ textAlign: 'center' }}>
+            <div style={{ 
+                textAlign: 'center',
+                marginTop: '20px',
+            }}>
                 {(!isWebsiteSupported) ? (
                     <Typography>
                         {messages.websiteNotSupported}

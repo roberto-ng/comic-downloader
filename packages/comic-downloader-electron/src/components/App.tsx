@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { MemoryRouter as Router, Route, Switch } from 'react-router-dom'
 import { hot } from 'react-hot-loader'
+import contextMenu from 'electron-context-menu'
 import { createMuiTheme } from '@material-ui/core/styles'
 import { purple } from '@material-ui/core/colors'
 import { 
@@ -29,8 +30,13 @@ function App() {
 
     useEffect(() => {
         // get system locale
-        const newLocale = app.getLocale();
-        setLocale(getValidLocale(newLocale));
+        const newLocale = getValidLocale(app.getLocale());
+        setLocale(newLocale);
+        
+        contextMenu({
+            showInspectElement: false,
+            showSearchWithGoogle: false,
+        });
     }, []);
 
     const changeLocale = (newLocale: string) => {

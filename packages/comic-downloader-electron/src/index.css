@@ -1,8 +1,18 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     margin: auto;
+
+    /* disable selection */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
 }
 
 a {
     text-decoration: none;
+}
+
+.selectable {
+    /* enable selection */
+    -webkit-touch-callout: unset;
+    -webkit-user-select: unset;
 }
