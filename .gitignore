@@ -5,3 +5,4 @@ packages/*/.cache
 packages/*/yarn-error.log
 packages/*/.test-cache
 .parcel-cache
+packages/comic-downloader-electron/out

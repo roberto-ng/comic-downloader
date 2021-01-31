@@ -1,4 +1,6 @@
 import { app, BrowserWindow } from 'electron';
+import isDev from 'electron-is-dev';
+
 declare const MAIN_WINDOW_WEBPACK_ENTRY: any;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -24,6 +26,11 @@ const createWindow = (): void => {
 
     // Open the DevTools.
     //mainWindow.webContents.openDevTools();
+
+    if (!isDev) {
+        // disable default menus
+        mainWindow.setMenu(null);
+    }
 };
 
 // This method will be called when Electron has finished
