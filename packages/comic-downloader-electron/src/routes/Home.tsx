@@ -15,7 +15,7 @@ export default withRouter(({ history }) => {
         url, 
         outputDir, 
         changeUrl, 
-        changeOutputDir 
+        changeOutputDir,
     } = useContext(chapterContext);
 
     const handleDownloadChapterClick = () => {
@@ -37,7 +37,7 @@ export default withRouter(({ history }) => {
     const handleSelectFolderClick = async () => {
         const mainWindow = getCurrentWindow();
 
-        let defaultPath = undefined;
+        let defaultPath: string|undefined = undefined;
         if (outputDir.trim().length > 0) {
             // set the last selected folder as the default path
             defaultPath = outputDir.trim();
@@ -87,7 +87,7 @@ export default withRouter(({ history }) => {
                 variant="contained"
                 color="primary"
                 onClick={handleDownloadChapterClick}
-                style={{ marginTop: '20px' }}
+                style={{ marginTop: '25px' }}
             >
                 {messages.downloadChapter}
             </Button>

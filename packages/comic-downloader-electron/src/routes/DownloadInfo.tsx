@@ -170,9 +170,11 @@ export default function DownloadInfo() {
         return (
             <div style={{ textAlign: 'center' }}>
                 {(!isWebsiteSupported) ? (
-                    <h3>{messages.websiteNotSupported}</h3>
+                    <Typography>
+                        {messages.websiteNotSupported}
+                    </Typography>
                 ) : (
-                    <h3>{errorMsg}</h3>
+                    <Typography>{errorMsg}</Typography>
                 )}
 
                 <Link to="/">
@@ -193,12 +195,12 @@ export default function DownloadInfo() {
         <>            
             {(imageLinks.length > 0) ? (
                 <ProgressContainer>
-                    <p>
+                    <Typography>
                         {messages.downloadingChapterFrom.replace('{siteName}', siteName)}
-                    </p>
-                    <h3>
+                    </Typography>
+                    <Typography>
                         {completeDownloadsNumber}/{imageLinks.length}
-                    </h3>
+                    </Typography>
                     <div className="progress-bar">
                         <LinearProgress 
                             variant="determinate"
@@ -208,12 +210,14 @@ export default function DownloadInfo() {
                     </div>
                 </ProgressContainer>
             ) : (
-                <h2 style={{ textAlign: 'center' }}>
-                    Fetching chapter data...
-                </h2>
+                <ProgressContainer>
+                    <Typography style={{ textAlign: 'center' }}>
+                        Fetching chapter data...
+                    </Typography>
+                </ProgressContainer>
             )}
             
-            <div style={{ margin: '10px' }}>
+            <AccordionContainer>
                 <Accordion>
                     <AccordionSummary
                     expandIcon={<ExpandMoreIcon />}
@@ -223,23 +227,16 @@ export default function DownloadInfo() {
                     <Typography>Details</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
-                        <div 
-                            ref={refLogContainer}
-                            style={{ 
-                                maxHeight: '300px',
-                                overflowY: 'scroll',
-                                width: '100%', 
-                            }}
-                        >
+                        <DetailsContents ref={refLogContainer}>
                             {logs.map((log, i) => (
                                 <Typography key={i}>
                                     {log}
                                 </Typography>
                             ))}
-                        </div>
+                        </DetailsContents>
                     </AccordionDetails>
                 </Accordion>
-            </div> 
+            </AccordionContainer> 
 
             {(areAllDownloadsComplete) && (
                 <div style={{ textAlign: 'center' }}>
@@ -290,4 +287,14 @@ const ProgressContainer = styled.div`
         margin-top: 30px;
         font-size: 18px;
     }
+`;
+
+const DetailsContents = styled.div`
+    max-height: 250px;
+    overflow-y: scroll;
+    width: 100%;
+`;
+
+const AccordionContainer = styled.div`
+    margin: 30px;
 `;
