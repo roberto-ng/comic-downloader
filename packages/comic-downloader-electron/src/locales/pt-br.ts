@@ -11,5 +11,8 @@ export default {
     chapterName: 'Nome do capítulo (opcional)',
     forgotChapterUrl: 'Você escqueceu de colocar a URL do capítulo!',
     forgotToChooseFolder: 'Você esqueceu de escolher uma pasta!',
-    invalidChapterName: 'O nome do capítulo só pode conter letras, números, barra de espaço, underline e traço.'
+    invalidChapterName: 'O nome do capítulo só pode conter letras, números, barra de espaço, underline e traço.',
+    copy: 'Copiar',
+    cut: 'Recortar',
+    paste: 'Colar',
 };

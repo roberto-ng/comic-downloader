@@ -11,5 +11,8 @@ export default {
     chapterName: 'Chapter name (optional)',
     forgotChapterUrl: 'You forgot to enter the chapter URL!',
     forgotToChooseFolder: 'You forgot to choose a folder!',
-    invalidChapterName: 'The chapter name can only contain letters, numbers, space, underscore and slash.'
+    invalidChapterName: 'The chapter name can only contain letters, numbers, space, underscore and slash.',
+    copy: 'Copy',
+    cut: 'Cut',
+    paste: 'Paste',
 };

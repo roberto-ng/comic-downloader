@@ -3,7 +3,7 @@ import http from 'http'
 import https from 'https'
 import path from 'path'
 import React, { useContext, useEffect, useRef, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import Accordion from '@material-ui/core/Accordion'
 import AccordionSummary from '@material-ui/core/AccordionSummary'
@@ -12,7 +12,7 @@ import Typography from '@material-ui/core/Typography'
 import { Button, LinearProgress } from '@material-ui/core'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import { downloadComic, WebsiteIsNotSupported } from 'comic-downloader-core'
-import { localeContext, getValidLocale } from '../locales/localeContext'
+import { localeContext } from '../locales/localeContext'
 import { chapterContext } from '../ChapterContext'
 import locales from '../locales'
 
@@ -30,12 +30,9 @@ enum DOWNLOAD_STATE {
 }
 
 export default function DownloadInfo() {
-    const { encodedUrl, encodedOutputDir } = useParams<Params>();
     const { locale } = useContext(localeContext);
-    const { chapterName } = useContext(chapterContext);
+    const { url, outputDir, chapterName } = useContext(chapterContext);
     
-    const [url, setUrl] = useState<string>('');
-    const [outputDir, setOutputDir] = useState<string>('');
     const [siteName, setSiteName] = useState<string>('');
     const [imageLinks, setImageLinks] = useState<string[]>([]);
     const [downloadStates, setDownloadStates] = useState<DOWNLOAD_STATE[]>([]);
@@ -48,22 +45,21 @@ export default function DownloadInfo() {
     const refLogContainer = useRef<HTMLDivElement>(null);
 
     const startDownload = async () => {
-        setErrorMsg('');
         const messages = locales[locale];
-        let namePrefix = chapterName.trim().replace(' ', '_');
-        if (namePrefix.length > 0) {
-            namePrefix = `${namePrefix}-`
-        }
+        setErrorMsg('');
         
         try {
-            let decodedUrl = decodeURIComponent(encodedUrl);
-            const decodedOutputDir = decodeURIComponent(encodedOutputDir);
-
-            if (!decodedUrl.startsWith('http')) {
-                decodedUrl = `http://${decodedUrl}`;
+            let namePrefix = chapterName.trim().replace(' ', '_');
+            if (namePrefix.length > 0) {
+                namePrefix = `${namePrefix}-`
             }
             
-            const res = await downloadComic(decodedUrl);
+            let pageUrl = url.trim();
+            if (!pageUrl.startsWith('http')) {
+                pageUrl = `http://${pageUrl}`;
+            }
+            
+            const res = await downloadComic(pageUrl);
             setSiteName(res.websiteData.name);
             setImageLinks(res.images);
             setIsWebsiteSupported(true);
@@ -86,7 +82,7 @@ export default function DownloadInfo() {
                     fileName = `${namePrefix}${pageNumber}.${fileExtension}`;
                 }
 
-                const fullPath = path.join(decodedOutputDir, fileName);
+                const fullPath = path.join(outputDir, fileName);
                 downloadFile(imageLink, fullPath)
                     .then((url) => {
                         const index = res.images.indexOf(url);
@@ -137,9 +133,6 @@ export default function DownloadInfo() {
     };
 
     useEffect(() => {
-        setUrl(decodeURIComponent(encodedUrl))
-        setOutputDir(decodeURIComponent(encodedOutputDir));
-
         startDownload();
     }, []);
 

@@ -33,9 +33,19 @@ function App() {
         const newLocale = getValidLocale(app.getLocale());
         setLocale(newLocale);
         
+        const { 
+            copy,
+            cut,
+            paste,
+        } = locales[newLocale];
         contextMenu({
             showInspectElement: false,
             showSearchWithGoogle: false,
+            labels: {
+                cut,
+                copy,
+                paste,
+            },
         });
     }, []);
 
@@ -79,7 +89,7 @@ function App() {
                         <Switch>
                             <Route exact path="/" component={Home} />
                             <Route 
-                                path="/downloadinfo/:encodedUrl/:encodedOutputDir/" 
+                                path="/downloadinfo/" 
                                 component={DownloadInfo} 
                             />
                         </Switch>

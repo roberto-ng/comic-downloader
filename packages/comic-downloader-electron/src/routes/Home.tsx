@@ -77,7 +77,7 @@ export default withRouter(({ history }) => {
                     type="text"
                     fullWidth={true}
                     onChange={e => changeUrl(e.target.value)} 
-                    style={{ marginBottom: '20px', width: '300px' }}
+                    style={textFieldStyle}
                 />
                 <br/>
                 </div>
@@ -89,7 +89,7 @@ export default withRouter(({ history }) => {
                     type="text"
                     fullWidth={true}
                     onChange={e => changeChapterName(e.target.value)} 
-                    style={{ marginBottom: '20px', width: '300px' }}
+                    style={textFieldStyle}
                 />
                 <br/>
 
@@ -125,10 +125,7 @@ const HomeContainer = styled.div`
     text-align: center;
 `;
 
-declare module 'react' {
-    interface HTMLAttributes<T> extends AriaAttributes, DOMAttributes<T> {
-      // extends React's HTMLAttributes
-      directory?: string;
-      webkitdirectory?: string;
-    }
-}
+const textFieldStyle = { 
+    marginBottom: '20px', 
+    width: '300px', 
+};
