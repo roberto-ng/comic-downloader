@@ -13,25 +13,36 @@ export default withRouter(({ history }) => {
     const { locale } = useContext(localeContext);
     const { 
         url, 
+        chapterName,
         outputDir, 
         changeUrl, 
+        changeChapterName,
         changeOutputDir,
     } = useContext(chapterContext);
 
-    const handleDownloadChapterClick = () => {
+    const handleDownloadChapterClick = () => {        
         if (url.trim().length === 0) {
-            window.alert('You forgot to enter the chapter URL.');
+            window.alert(messages.forgotChapterUrl);
             return;
         }
         if (outputDir.trim().length === 0) {
-            window.alert('You forgot to choose a folder');
+            window.alert(messages.forgotToChooseFolder);
+            return;
+        }
+
+        // regex that only allows for letters, numbers, space, underscore and slash
+        const regex = /^([a-zA-Z0-9 _-]+)$/;
+        if (chapterName.trim().length > 0 && 
+            !regex.test(chapterName)) {
+            window.alert(messages.invalidChapterName);
             return;
         }
 
         const encodedUrl = encodeURIComponent(url.trim());
         const encodedDir = encodeURIComponent(outputDir.trim());
 
-        history.push(`/downloadinfo/${encodedUrl}/${encodedDir}`);
+        const route = `/downloadinfo/${encodedUrl}/${encodedDir}`;
+        history.push(route);
     };
 
     const handleSelectFolderClick = async () => {
@@ -58,15 +69,29 @@ export default withRouter(({ history }) => {
     const messages = locales[locale];
     return (
         <HomeContainer>
-            <TextField 
-                label={messages.chapterUrl} 
-                variant="outlined" 
-                type="text"
-                value={url}
-                onChange={e => changeUrl(e.target.value)} 
-                style={{ marginBottom: '20px' }}
-            />
-            <br/>
+            <div>
+                <TextField 
+                    label={messages.chapterUrl} 
+                    value={url}
+                    variant="outlined" 
+                    type="text"
+                    fullWidth={true}
+                    onChange={e => changeUrl(e.target.value)} 
+                    style={{ marginBottom: '20px', width: '300px' }}
+                />
+                <br/>
+                </div>
+
+                <TextField 
+                    label={messages.chapterName} 
+                    value={chapterName}
+                    variant="outlined" 
+                    type="text"
+                    fullWidth={true}
+                    onChange={e => changeChapterName(e.target.value)} 
+                    style={{ marginBottom: '20px', width: '300px' }}
+                />
+                <br/>
 
             {(outputDir === '') ? (
                 <label>{messages.saveInNoFolder}</label>
@@ -87,7 +112,7 @@ export default withRouter(({ history }) => {
                 variant="contained"
                 color="primary"
                 onClick={handleDownloadChapterClick}
-                style={{ marginTop: '25px' }}
+                style={{ marginTop: '20px' }}
             >
                 {messages.downloadChapter}
             </Button>

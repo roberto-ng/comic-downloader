@@ -13,6 +13,7 @@ import { Button, LinearProgress } from '@material-ui/core'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import { downloadComic, WebsiteIsNotSupported } from 'comic-downloader-core'
 import { localeContext, getValidLocale } from '../locales/localeContext'
+import { chapterContext } from '../ChapterContext'
 import locales from '../locales'
 
 const { app } = require('electron').remote;
@@ -31,6 +32,7 @@ enum DOWNLOAD_STATE {
 export default function DownloadInfo() {
     const { encodedUrl, encodedOutputDir } = useParams<Params>();
     const { locale } = useContext(localeContext);
+    const { chapterName } = useContext(chapterContext);
     
     const [url, setUrl] = useState<string>('');
     const [outputDir, setOutputDir] = useState<string>('');
@@ -48,6 +50,10 @@ export default function DownloadInfo() {
     const startDownload = async () => {
         setErrorMsg('');
         const messages = locales[locale];
+        let namePrefix = chapterName.trim().replace(' ', '_');
+        if (namePrefix.length > 0) {
+            namePrefix = `${namePrefix}-`
+        }
         
         try {
             let decodedUrl = decodeURIComponent(encodedUrl);
@@ -74,10 +80,10 @@ export default function DownloadInfo() {
 
                 const numberOfDigits = String(res.images.length).length; 
                 const pageNumber = `${i+1}`.padStart(numberOfDigits, '0');
-                let fileName = `${pageNumber}`;
+                let fileName = `${namePrefix}${pageNumber}`;
                 const fileExtension = imageLink.split('.').pop();
                 if (fileExtension && fileExtension.length > 0) {
-                    fileName = `${pageNumber}.${fileExtension}`;
+                    fileName = `${namePrefix}${pageNumber}.${fileExtension}`;
                 }
 
                 const fullPath = path.join(decodedOutputDir, fileName);

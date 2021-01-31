@@ -7,5 +7,9 @@ export default {
     saveIn: 'Salvar em: {outputDir}',
     websiteNotSupported: 'Erro: Infelizmente, no momento esse site não é suportado pelo nosso programa',
     goBack: 'Voltar',
-    downloadingChapterFrom: 'Baixando capítulo de: {siteName}'
+    downloadingChapterFrom: 'Baixando capítulo de: {siteName}',
+    chapterName: 'Nome do capítulo (opcional)',
+    forgotChapterUrl: 'Você escqueceu de colocar a URL do capítulo!',
+    forgotToChooseFolder: 'Você esqueceu de escolher uma pasta!',
+    invalidChapterName: 'O nome do capítulo só pode conter letras, números, barra de espaço, underline e traço.'
 };

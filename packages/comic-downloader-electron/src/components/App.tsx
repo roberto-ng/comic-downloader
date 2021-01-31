@@ -24,6 +24,7 @@ const theme = createMuiTheme({
 function App() {
     const [locale, setLocale] = useState<string>('en');
     const [url, setUrl] = useState<string>('');
+    const [chapterName, setChapterName] = useState<string>('');
     const [outputDir, setOutputDir] = useState<string>('');
 
     useEffect(() => {
@@ -49,10 +50,16 @@ function App() {
         setOutputDir(dir);
     };
 
+    const changeChapterName = (name: string) => {
+        setChapterName(name);
+    };
+
     const chapterContextValue = {
         url,
+        chapterName,
         outputDir,
         changeUrl,
+        changeChapterName,
         changeOutputDir,
     };
 
@@ -66,7 +73,7 @@ function App() {
                         <Switch>
                             <Route exact path="/" component={Home} />
                             <Route 
-                                path="/downloadinfo/:encodedUrl/:encodedOutputDir" 
+                                path="/downloadinfo/:encodedUrl/:encodedOutputDir/" 
                                 component={DownloadInfo} 
                             />
                         </Switch>
