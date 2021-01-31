@@ -1,6 +1,6 @@
 export default {
     downloadChapter: 'Download chapter',
-    chapterUrl: 'Chapter URL: ',
+    chapterUrl: 'Chapter URL',
     selectFolder: 'Select folder',
     pageDownloadedSuccessfully: 'Page {fileName} has been downloaded successfully',
     saveInNoFolder: 'Save at: no folder selected ',
