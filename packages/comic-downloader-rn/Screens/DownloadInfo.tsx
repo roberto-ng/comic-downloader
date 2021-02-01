@@ -17,15 +17,15 @@ interface Props {
 export default function DownloadInfo({ navigation }: Props) {
     const [pages, setPages] = useState<string[]>([]);
 
+    useEffect(() => {
+        startDownload().catch(e => console.error(e));
+    }, []);
+
     const startDownload = async () => {
         const pageUrl = 'https://tapas.io/episode/1886512';
         const res = await downloadComic(pageUrl);
         setPages(res.images);
     };
-
-    useEffect(() => {
-        startDownload().catch(e => console.error(e));
-    }, []);
     
     const handleGoBackClick = () => {
         navigation.replace('Home')
