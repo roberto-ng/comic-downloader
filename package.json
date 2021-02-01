@@ -2,8 +2,7 @@
   "workspaces": {
     "packages": ["packages/*"],
     "nohoist": [
-      "**/comic-downloader-electron/**",
-      "**/comic-downloader-rn/**"
+      "**/comic-downloader-electron/**"
     ]
   },
   "private": true
