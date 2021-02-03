@@ -38,6 +38,7 @@ function App() {
             cut,
             paste,
         } = locales[newLocale];
+        
         contextMenu({
             showInspectElement: false,
             showSearchWithGoogle: false,

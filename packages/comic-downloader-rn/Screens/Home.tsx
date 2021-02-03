@@ -23,8 +23,12 @@ export default function Home({ navigation }: Props) {
         changeOutputDir,
     } = useContext(chapterContext) as ChapterContext;
 
-    const handleDownloadChapterClick = () => {
+    const handleDownloadChapterPress = () => {
         navigation.replace('DownloadInfo')
+    };
+
+    const handleChooseFolderPress = () => {
+        console.log('hi!!!');
     };
 
     return (
@@ -49,7 +53,7 @@ export default function Home({ navigation }: Props) {
                 <Text>Save at:</Text>
                 <Button
                     mode="outlined"
-                    onPress={() => console.log('hi')}
+                    onPress={handleChooseFolderPress}
                 >
                     Select folder
                 </Button>
@@ -57,7 +61,7 @@ export default function Home({ navigation }: Props) {
 
             <Button
                 mode="contained"
-                onPress={handleDownloadChapterClick}
+                onPress={handleDownloadChapterPress}
             >
                 Download chapter
             </Button>

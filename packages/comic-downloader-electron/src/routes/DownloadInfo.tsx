@@ -85,6 +85,7 @@ export default function DownloadInfo() {
                 const fullPath = path.join(outputDir, fileName);
                 downloadFile(imageLink, fullPath)
                     .then((url) => {
+                        console.log(url + ' complete')
                         const index = res.images.indexOf(url);
 
                         const log = messages.pageDownloadedSuccessfully
