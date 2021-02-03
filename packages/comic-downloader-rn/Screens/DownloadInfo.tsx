@@ -46,6 +46,7 @@ export default function DownloadInfo({ navigation }: Props) {
     const [completeDownloadsNumber, setCompleteDownloadsNumber] = useState<number>(0);
     const [isWebsiteSupported, setIsWebsiteSupported] = useState<boolean>(true);
     const [isZipFinished, setIsZipFinished] = useState<boolean>(false);
+    const [zipFile, setZipFile] = useState<string>('');
 
     useEffect(() => {
         startDownload().catch(e => console.error(e));
@@ -100,11 +101,17 @@ export default function DownloadInfo({ navigation }: Props) {
             for (let i = 0; i < localDownloadStates.length; i++) {
                 localDownloadStates[i] = DOWNLOAD_STATE.DOWNLOADING;
             }
-
+            
             for (const imageLink of res.images) {
                 const i = res.images.indexOf(imageLink);
-                const fileName = getFileName(i);
-
+                const numberOfDigits = String(imageLinks.length).length; 
+                const pageNumber = `${i+1}`.padStart(numberOfDigits, '0');
+                let fileName = `${pageNumber}`;
+                const fileExtension = imageLink.split('.').pop();
+                if (fileExtension && fileExtension.length > 0) {
+                    fileName = `${pageNumber}.${fileExtension}`;
+                }
+                
                 const fullPath = targetDir + fileName;
                 downloadFile(imageLink, fullPath)
                 .then((url) => {
@@ -159,7 +166,7 @@ export default function DownloadInfo({ navigation }: Props) {
         const zip = new JSZip();
         for (const link of imageLinks) {
             const i = imageLinks.indexOf(link);
-            const fileName = getFileName(i);
+            const fileName = getFileName(i, imageLinks);
             const fileUri = targetDir + fileName;
 
             const fileBase64 = await FileSystem.readAsStringAsync(fileUri, {
@@ -169,7 +176,11 @@ export default function DownloadInfo({ navigation }: Props) {
         }
 
         const zipBase64 = await zip.generateAsync({ type:"base64" });
-        const zipFileName = filenamify(url) + '.zip';
+        const zipFileName = 
+            `${filenamify(url)}.zip`
+                .replace('https!', '')
+                .replace('http!', '');
+
         await FileSystem.writeAsStringAsync(
             chaptersDir + zipFileName, 
             zipBase64, 
@@ -177,30 +188,16 @@ export default function DownloadInfo({ navigation }: Props) {
         );
 
         setIsZipFinished(true);
+        setZipFile(zipFileName);
     };
 
     const handleShareFile = async () => {
-        const zipFileName = filenamify(url) + '.zip';
-        await Sharing.shareAsync(chaptersDir + zipFileName);
+        await Sharing.shareAsync(chaptersDir + zipFile);
     };
     
     const handleGoBackClick = () => {
         navigation.replace('Home')
     };
-
-    const getFileName = (i: number) => {
-        const imageLink = imageLinks[i];
-        const numberOfDigits = String(imageLinks.length).length; 
-        const pageNumber = `${i+1}`.padStart(numberOfDigits, '0');
-        let fileName = `${pageNumber}`;
-        const fileExtension = imageLink.split('.').pop();
-        if (fileExtension && fileExtension.length > 0) {
-            fileName = `${pageNumber}.${fileExtension}`;
-        }
-
-        return fileName;
-    };
-
 
     const progress = (100 * completeDownloadsNumber) / imageLinks.length;
 
@@ -255,3 +252,16 @@ async function downloadFile(url: string, filePath: string): Promise<string> {
     await FileSystem.downloadAsync(url, filePath);
     return url;
 }
+
+function getFileName(i: number, imageLinks: string[]): string {
+    const imageLink = imageLinks[i];
+    const numberOfDigits = String(imageLinks.length).length; 
+    const pageNumber = `${i+1}`.padStart(numberOfDigits, '0');
+    let fileName = `${pageNumber}`;
+    const fileExtension = imageLink.split('.').pop();
+    if (fileExtension && fileExtension.length > 0) {
+        fileName = `${pageNumber}.${fileExtension}`;
+    }
+
+    return fileName;
+};
