@@ -7,6 +7,7 @@ import * as FileSystem from 'expo-file-system'
 import * as Sharing from 'expo-sharing'
 import { Button } from 'react-native-paper'
 import JSZip from 'jszip'
+import nextFrame from 'next-frame'
 import { downloadComic, WebsiteIsNotSupported } from 'comic-downloader-core'
 import { RootStackParamList } from '.'
 import { useContext } from 'react'
@@ -165,6 +166,8 @@ export default function DownloadInfo({ navigation }: Props) {
     const zipFiles = async () => {
         const zip = new JSZip();
         for (const link of imageLinks) {
+            await nextFrame();
+
             const i = imageLinks.indexOf(link);
             const fileName = getFileName(i, imageLinks);
             const fileUri = targetDir + fileName;
@@ -221,9 +224,12 @@ export default function DownloadInfo({ navigation }: Props) {
                 </Button>
             )}
 
-            {imageLinks.map((page, i) => (
-                <Text key={i}>{page}</Text>
-            ))}
+            <Button
+                mode="outlined"
+                onPress={() => console.log('testing')}
+            >
+                Test
+            </Button>
 
             {(areAllDownloadsComplete) && (
                 <Text>Download complete</Text>
