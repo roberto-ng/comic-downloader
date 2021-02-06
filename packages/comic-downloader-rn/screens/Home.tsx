@@ -1,11 +1,15 @@
 import { StatusBar } from 'expo-status-bar'
 import React, { useContext } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { Alert, Text, View } from 'react-native'
 import { StackNavigationProp } from '@react-navigation/stack'
+import MediaLibrary from 'expo-media-library'
+import * as Permissions from 'expo-permissions'
 import styled from 'styled-components/native'
 import { Button, TextInput } from 'react-native-paper'
 import { RootStackParamList } from '.'
 import { chapterContext, ChapterContext } from '../ChapterContext'
+import locales from '../locales'
+import { LocaleContext, localeContext } from '../locales/LocaleContext'
 
 type HomeScreenRouteProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -14,21 +18,39 @@ interface Props {
 }
 
 export default function Home({ navigation }: Props) {
+    const { locale } = useContext(localeContext) as LocaleContext;
     const { 
         url, 
         chapterName,
-        outputDir, 
         changeUrl, 
         changeChapterName,
-        changeOutputDir,
     } = useContext(chapterContext) as ChapterContext;
 
-    const handleDownloadChapterPress = () => {
-        navigation.replace('DownloadInfo')
-    };
+    const messages = locales[locale];
 
-    const handleChooseFolderPress = () => {
-        console.log('hi!!!');
+    const handleDownloadChapterPress = async () => {
+        if (url.trim().length === 0) {
+            Alert.alert(messages.forgotChapterUrl);
+            return;
+        }
+
+        const permission = await Permissions.getAsync(Permissions.MEDIA_LIBRARY);
+        if (typeof permission === 'undefined' || !permission.granted) {
+            const newPermision = await Permissions.askAsync(Permissions.MEDIA_LIBRARY);
+            if (!newPermision.granted) {
+                return;
+            }
+        }
+
+        // regex that only allows for letters, numbers, space, underscore and slash
+        const regex = /^([a-zA-Z0-9 _-]+)$/;
+        if (chapterName.trim().length > 0 && 
+            !regex.test(chapterName)) {
+            Alert.alert(messages.invalidChapterName);
+            return;
+        }
+
+        navigation.replace('DownloadInfo')
     };
 
     return (
@@ -48,16 +70,6 @@ export default function Home({ navigation }: Props) {
                     onChangeText={text => changeChapterName(text)}
                 />
             </TextInputContainer>
-
-            <SaveAtContainer>
-                <Text>Save at:</Text>
-                <Button
-                    mode="outlined"
-                    onPress={handleChooseFolderPress}
-                >
-                    Select folder
-                </Button>
-            </SaveAtContainer>
 
             <Button
                 mode="contained"
