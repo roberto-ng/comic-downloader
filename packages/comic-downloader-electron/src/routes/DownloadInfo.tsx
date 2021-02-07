@@ -49,7 +49,7 @@ export default function DownloadInfo() {
         setErrorMsg('');
         
         try {
-            let namePrefix = chapterName.trim().replace(' ', '_');
+            let namePrefix = replaceAll(chapterName.trim(), ' ', '_');
             if (namePrefix.length > 0) {
                 namePrefix = `${namePrefix}-`
             }
@@ -276,6 +276,10 @@ async function request(url: string): Promise<http.IncomingMessage> {
             .on('response', (response) => resolve(response))
             .on('error', (e) => reject([url, e.message]));
     });
+}
+
+function replaceAll(str: string, find: string, replace: string): string {
+    return str.split(find).join(replace);
 }
 
 const ProgressContainer = styled.div`

@@ -48,7 +48,6 @@ export default function DownloadInfo({ navigation }: Props) {
     const [isWebsiteSupported, setIsWebsiteSupported] = useState<boolean>(true);
     const [isSavedToGallery, setIsSavedToGallery] = useState<boolean>(false);
     const [isSavingToGallery, setIsSavingToGallery] = useState<boolean>(false);
-    const [zipFile, setZipFile] = useState<string>('');
     const [uris, setUris] = useState<string[]>([]);
 
     useEffect(() => {
@@ -92,7 +91,7 @@ export default function DownloadInfo({ navigation }: Props) {
         await ensureDirExists();
                 
         try {
-            let namePrefix = chapterName.trim().replace(' ', '_');
+            let namePrefix = replaceAll(chapterName.trim(), ' ', '_');
             if (namePrefix.length > 0) {
                 namePrefix = `${namePrefix}-`
             }
@@ -324,6 +323,10 @@ export default function DownloadInfo({ navigation }: Props) {
             <StatusBar style="auto" />
         </ViewContainer>
     );
+}
+
+function replaceAll(str: string, find: string, replace: string): string {
+    return str.split(find).join(replace);
 }
 
 const ViewContainer = styled.View`
