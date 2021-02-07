@@ -212,10 +212,6 @@ export default function DownloadInfo({ navigation }: Props) {
 
         await MediaLibrary.addAssetsToAlbumAsync(assetList, album, false);
     };
-
-    const handleShareFile = async () => {
-        await Sharing.shareAsync(chaptersDir + zipFile);
-    };
     
     const handleGoBackClick = () => {
         navigation.replace('Home')
@@ -254,14 +250,6 @@ export default function DownloadInfo({ navigation }: Props) {
             <StatusBar style="auto" />
         </HomeContainer>
     );
-}
-
-function stringToUint8Array(str: string): Uint8Array {
-    return base64.toByteArray(str);
-}
-
-function Uint8ArrayToString(array: Uint8Array): string {
-    return base64.fromByteArray(array);
 }
 
 const HomeContainer = styled.View`
