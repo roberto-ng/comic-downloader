@@ -5,7 +5,7 @@ import { StackNavigationProp } from '@react-navigation/stack'
 import styled from 'styled-components/native'
 import * as FileSystem from 'expo-file-system'
 import * as MediaLibrary from 'expo-media-library'
-import { Button } from 'react-native-paper'
+import { Button, ProgressBar, Colors } from 'react-native-paper'
 import { downloadComic, WebsiteIsNotSupported } from 'comic-downloader-core'
 import { RootStackParamList } from '.'
 import { useContext } from 'react'
@@ -26,15 +26,15 @@ enum DOWNLOAD_STATE {
     ERROR,
 }
 
-//const url = 'https://tapas.io/episode/1886512';
 const chaptersDir = FileSystem.cacheDirectory + 'chapters/';
-//const targetDir = chaptersDir + filenamify(url) + '/';
+const defaultAlbumName = 'Comic Downloader';
 
 export default function DownloadInfo({ navigation }: Props) {
     const { locale } = useContext(localeContext) as LocaleContext;
     const { 
         url,
         chapterName,
+        albumName,
     } = useContext(chapterContext) as ChapterContext;
 
     const [targetDir, setTargetDir] = useState<string>(chaptersDir + filenamify(url) + '/');
@@ -47,11 +47,16 @@ export default function DownloadInfo({ navigation }: Props) {
     const [completeDownloadsNumber, setCompleteDownloadsNumber] = useState<number>(0);
     const [isWebsiteSupported, setIsWebsiteSupported] = useState<boolean>(true);
     const [isSavedToGallery, setIsSavedToGallery] = useState<boolean>(false);
+    const [isSavingToGallery, setIsSavingToGallery] = useState<boolean>(false);
     const [zipFile, setZipFile] = useState<string>('');
     const [uris, setUris] = useState<string[]>([]);
 
     useEffect(() => {
-        startDownload().catch(e => console.error(e));
+        startDownload()
+            .catch(e => {
+                console.error(e);
+                setErrorMsg(e.toString());
+            });
     }, []);
 
     useEffect(() => {
@@ -73,8 +78,10 @@ export default function DownloadInfo({ navigation }: Props) {
     useEffect(() => {
         if (areAllDownloadsComplete && !isSavedToGallery) {
             moveFilesToGallery()
-                .then(() => setIsSavedToGallery(true))
-                .catch(e => console.error(e));
+                .catch(e => {
+                    console.error(e);
+                    setErrorMsg(e.toString());
+                });
         }
     }, [areAllDownloadsComplete])
 
@@ -96,6 +103,7 @@ export default function DownloadInfo({ navigation }: Props) {
             }
             
             const res = await downloadComic(pageUrl);
+            setSiteName(res.websiteData.name);
             setImageLinks(res.images);
             setIsWebsiteSupported(true);
             
@@ -171,8 +179,18 @@ export default function DownloadInfo({ navigation }: Props) {
     };
 
     const moveFilesToGallery = async () => {
+        setIsSavingToGallery(true);
+
+        let album = defaultAlbumName;
+        if (albumName.trim().length > 0) {
+            album = albumName;
+        }
+
         const assets = await createAssets(uris);
-        await addAssetsToAlbum('batata', assets);
+        await addAssetsToAlbum(album, assets);
+
+        setIsSavingToGallery(false);
+        setIsSavedToGallery(true);
     };
 
     const ensureDirExists = async (): Promise<void> => {
@@ -215,44 +233,115 @@ export default function DownloadInfo({ navigation }: Props) {
         navigation.replace('Home')
     };
 
+    const messages = locales[locale];
     const progress = (100 * completeDownloadsNumber) / imageLinks.length;
 
+    if (errorMsg.trim().length > 0) {
+        // show error message
+        return (
+            <ViewContainer>
+                {(!isWebsiteSupported) ? (
+                    <LargeText>
+                        {messages.websiteNotSupported}
+                    </LargeText>
+                ) : (
+                    <LargeText>{errorMsg}</LargeText>
+                )}
+
+                <Button
+                    mode="contained"
+                    onPress={handleGoBackClick}
+                >
+                    {messages.goBack}
+                </Button>
+            </ViewContainer>
+        );
+    }
+
     return (
-        <HomeContainer>
-            <Text>{completeDownloadsNumber}/{imageLinks.length}</Text>
+        <ViewContainer>
+            <LargeText>
+                {messages.downloadingChapterFrom.replace('{siteName}', siteName)}
+            </LargeText>
 
-            <Button
-                mode="contained"
-                onPress={handleGoBackClick}
-            >
-                Go back
-            </Button>
-
-            {(isSavedToGallery) && (
-                <Text>
-                    saved images to gallery
-                </Text>
+            {(imageLinks.length === 0) && (
+                <>
+                    <Text>
+                        {messages.fetchingData}
+                    </Text>
+                    <ProgressBarContainer>
+                        <ProgressBar
+                            indeterminate={true} 
+                        />
+                    </ProgressBarContainer>
+                </>
             )}
-
-            <Button
-                mode="outlined"
-                onPress={() => console.log('testing')}
-            >
-                Test
-            </Button>
-
-            {(areAllDownloadsComplete) && (
-                <Text>Download complete</Text>
+            {(imageLinks.length > 0 && !areAllDownloadsComplete) && (
+                <>
+                    <Text>{messages.DownloadingFiles}</Text>
+                    <Text>
+                        {completeDownloadsNumber}/{imageLinks.length}
+                    </Text>
+                    <ProgressBarContainer>
+                        <ProgressBar 
+                            progress={progress/100} 
+                        />
+                    </ProgressBarContainer>
+                </>
+            )}
+            {(isSavingToGallery) && (
+                <>
+                    <Text>
+                        {messages.savingToGallery}
+                    </Text>
+                    <ProgressBarContainer>
+                        <ProgressBar 
+                            progress={progress/100} 
+                        />
+                    </ProgressBarContainer>
+                </>
+            )}
+            {(isSavedToGallery) && (
+                <>
+                    <Text>
+                        {messages.addedToGallery}
+                    </Text>
+                    <ProgressBarContainer>
+                        <ProgressBar 
+                            progress={1} 
+                        />
+                    </ProgressBarContainer>
+                
+                    <Button
+                        mode="contained"
+                        onPress={handleGoBackClick}
+                    >
+                        {messages.goBack}
+                    </Button>
+                </>
             )}
 
             <StatusBar style="auto" />
-        </HomeContainer>
+        </ViewContainer>
     );
 }
 
-const HomeContainer = styled.View`
+const ViewContainer = styled.View`
     flex: 1;
     background-color: #fff;
     align-items: center;
     justify-content: center;
+`;
+
+const ProgressBarContainer = styled.View`
+    width: 300px;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-bottom: 20px;
+    margin-top: 5px;
+`;
+
+const LargeText = styled.Text`
+    font-size: 16px;
+    margin-bottom: 20px;
 `;

@@ -20,10 +20,12 @@ interface Props {
 export default function Home({ navigation }: Props) {
     const { locale } = useContext(localeContext) as LocaleContext;
     const { 
-        url, 
+        url,
         chapterName,
-        changeUrl, 
+        albumName,
+        changeUrl,
         changeChapterName,
+        changeAlbumName,
     } = useContext(chapterContext) as ChapterContext;
 
     const messages = locales[locale];
@@ -44,9 +46,12 @@ export default function Home({ navigation }: Props) {
 
         // regex that only allows for letters, numbers, space, underscore and slash
         const regex = /^([a-zA-Z0-9 _-]+)$/;
-        if (chapterName.trim().length > 0 && 
-            !regex.test(chapterName)) {
+        if (chapterName.trim().length > 0 && !regex.test(chapterName)) {
             Alert.alert(messages.invalidChapterName);
+            return;
+        }
+        if (albumName.trim().length > 0 && !regex.test(albumName)) {
+            Alert.alert(messages.invalidAlbumName);
             return;
         }
 
@@ -71,14 +76,20 @@ export default function Home({ navigation }: Props) {
                 />
             </TextInputContainer>
 
+            <TextInputContainer>
+                <TextInput
+                    label="Album name (optional)"
+                    value={albumName}
+                    onChangeText={text => changeAlbumName(text)}
+                />
+            </TextInputContainer>
+
             <Button
                 mode="contained"
                 onPress={handleDownloadChapterPress}
             >
                 Download chapter
             </Button>
-
-            <Text>{url}</Text>
 
             <StatusBar style="auto" />
         </HomeContainer>

@@ -16,7 +16,7 @@ export default function App() {
     const [locale, setLocale] = useState<string>('en');
     const [url, setUrl] = useState<string>('');
     const [chapterName, setChapterName] = useState<string>('');
-    const [outputDir, setOutputDir] = useState<string>('');
+    const [albumName, setAlbumName] = useState<string>('');
 
     useEffect(() => {
         const newLocale = getValidLocale(Localization.locale);
@@ -36,8 +36,8 @@ export default function App() {
         setUrl(newUrl);
     };
 
-    const changeOutputDir = (dir: string) => {
-        setOutputDir(dir);
+    const changeAlbumName = (name: string) => {
+        setAlbumName(name);
     };
 
     const changeChapterName = (name: string) => {
@@ -47,10 +47,10 @@ export default function App() {
     const chapterContextValue = {
         url,
         chapterName,
-        outputDir,
+        albumName,
         changeUrl,
         changeChapterName,
-        changeOutputDir,
+        changeAlbumName,
     };
 
     return (
