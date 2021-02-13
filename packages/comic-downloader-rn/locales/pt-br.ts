@@ -17,6 +17,7 @@ export default {
     savingToGallery: 'Salvando arquivos na galeria',
     DownloadingFiles: 'Baixando arquivos... ',
     addedToGallery: 'Os arquivos foram adicionados à sua galeria com sucesso.',
+    details: 'Detalhes',
     copy: 'Copiar',
     cut: 'Recortar',
     paste: 'Colar',

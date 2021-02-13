@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar'
 import React, { useContext } from 'react'
-import { Alert, Text, View } from 'react-native'
+import { Alert, Platform, View } from 'react-native'
 import { StackNavigationProp } from '@react-navigation/stack'
 import MediaLibrary from 'expo-media-library'
 import * as Permissions from 'expo-permissions'
@@ -31,17 +31,20 @@ export default function Home({ navigation }: Props) {
     const messages = locales[locale];
 
     const handleDownloadChapterPress = async () => {
+        // check if we have the media library permission if we're not on the web
+        if (Platform.OS !== 'web') {
+            const permission = await Permissions.getAsync(Permissions.MEDIA_LIBRARY);
+            if (typeof permission === 'undefined' || !permission.granted) {
+                const newPermision = await Permissions.askAsync(Permissions.MEDIA_LIBRARY);
+                if (!newPermision.granted) {
+                    return;
+                }
+            }
+        }
+
         if (url.trim().length === 0) {
             Alert.alert(messages.forgotChapterUrl);
             return;
-        }
-
-        const permission = await Permissions.getAsync(Permissions.MEDIA_LIBRARY);
-        if (typeof permission === 'undefined' || !permission.granted) {
-            const newPermision = await Permissions.askAsync(Permissions.MEDIA_LIBRARY);
-            if (!newPermision.granted) {
-                return;
-            }
         }
 
         // regex that only allows for letters, numbers, space, underscore and slash

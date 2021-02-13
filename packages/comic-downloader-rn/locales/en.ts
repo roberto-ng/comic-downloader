@@ -17,6 +17,7 @@ export default {
     savingToGallery: 'Saving files to gallery',
     DownloadingFiles: 'Downloading files... ',
     addedToGallery: 'The files have been added to your gallery successfully.',
+    details: 'Details',
     copy: 'Copy',
     cut: 'Cut',
     paste: 'Paste',

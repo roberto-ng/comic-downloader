@@ -20,6 +20,7 @@
     "@types/styled-components-react-native": "^5.1.1",
     "comic-downloader-core": "1.0.0",
     "expo": "~40.0.0",
+    "expo-constants": "~9.3.3",
     "expo-file-system": "~9.3.0",
     "expo-localization": "~9.1.0",
     "expo-media-library": "~10.0.0",

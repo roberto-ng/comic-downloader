@@ -1,11 +1,12 @@
 import { StatusBar } from 'expo-status-bar'
 import React, { useEffect, useState } from 'react'
-import {  Text, View } from 'react-native'
+import {  Text, FlatList, View } from 'react-native'
 import { StackNavigationProp } from '@react-navigation/stack'
 import styled from 'styled-components/native'
 import * as FileSystem from 'expo-file-system'
 import * as MediaLibrary from 'expo-media-library'
-import { Button, ProgressBar, Colors } from 'react-native-paper'
+import { Button, ProgressBar, List } from 'react-native-paper'
+import Constants from 'expo-constants'
 import { downloadComic, WebsiteIsNotSupported } from 'comic-downloader-core'
 import { RootStackParamList } from '.'
 import { useContext } from 'react'
@@ -49,6 +50,8 @@ export default function DownloadInfo({ navigation }: Props) {
     const [isSavedToGallery, setIsSavedToGallery] = useState<boolean>(false);
     const [isSavingToGallery, setIsSavingToGallery] = useState<boolean>(false);
     const [uris, setUris] = useState<string[]>([]);
+
+    const messages = locales[locale];
 
     useEffect(() => {
         startDownload()
@@ -180,13 +183,22 @@ export default function DownloadInfo({ navigation }: Props) {
     const moveFilesToGallery = async () => {
         setIsSavingToGallery(true);
 
+        let localLogs = [...logs, `${messages.savingToGallery}`];
+        setLogs(localLogs);
+
         let album = defaultAlbumName;
         if (albumName.trim().length > 0) {
             album = albumName;
         }
 
-        const assets = await createAssets(uris);
-        await addAssetsToAlbum(album, assets);
+        try {
+            const assets = await createAssets(uris);
+            await addAssetsToAlbum(album, assets);
+        }
+        catch (e) {
+            setErrorMsg(e.toString());
+            return;
+        }
 
         setIsSavingToGallery(false);
         setIsSavedToGallery(true);
@@ -232,10 +244,9 @@ export default function DownloadInfo({ navigation }: Props) {
         navigation.replace('Home')
     };
 
-    const messages = locales[locale];
     const progress = (100 * completeDownloadsNumber) / imageLinks.length;
 
-    if (errorMsg.trim().length > 0) {
+    if (errorMsg.length > 0) {
         // show error message
         return (
             <ViewContainer>
@@ -255,7 +266,11 @@ export default function DownloadInfo({ navigation }: Props) {
                 </Button>
             </ViewContainer>
         );
-    }
+    };
+
+    const renderItem = ({ item }) => (
+        <Text>{item}</Text>
+    );
 
     return (
         <ViewContainer>
@@ -320,6 +335,22 @@ export default function DownloadInfo({ navigation }: Props) {
                 </>
             )}
 
+            {/*
+            <View
+                style={{
+                    flex: 1,
+                    flexGrow: 1,
+                }}
+            >
+                <FlatList
+                    data={logs}
+                    renderItem={renderItem}
+                    keyExtractor={(log: string) => `${logs.indexOf(log)}`}
+                    contentContainerStyle={{}}
+                />
+            </View>
+            */}
+
             <StatusBar style="auto" />
         </ViewContainer>
     );
@@ -330,7 +361,8 @@ function replaceAll(str: string, find: string, replace: string): string {
 }
 
 const ViewContainer = styled.View`
-    flex: 1;
+    padding-top: ${Constants.statusBarHeight}px;
+    height: 100%;
     background-color: #fff;
     align-items: center;
     justify-content: center;
