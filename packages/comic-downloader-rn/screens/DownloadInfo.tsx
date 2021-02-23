@@ -121,7 +121,6 @@ export default function DownloadInfo({ navigation }: Props) {
                 fileUris.push(fullPath);
                 downloadFile(imageLink, fullPath)
                     .then((url) => {
-                        console.log(state.download.completeDownloads);
                         const index = res.images.indexOf(url);
 
                         const log = messages.pageDownloadedSuccessfully
