@@ -4,15 +4,13 @@ import { hot } from 'react-hot-loader'
 import contextMenu from 'electron-context-menu'
 import { createMuiTheme } from '@material-ui/core/styles'
 import { purple } from '@material-ui/core/colors'
-import { 
-    localeContext,
-    getValidLocale,
-} from '../locales/localeContext'
-import { chapterContext } from '../ChapterContext'
-import locales from '../locales'
+import { ThemeProvider } from 'styled-components'
+import { Provider } from 'react-redux'
+import { store, chapterSlice, downloadComic } from 'comic-downloader-core'
 import Home from '../routes/Home'
 import DownloadInfo from '../routes/DownloadInfo'
-import { ThemeProvider } from 'styled-components'
+import locales from '../locales'
+import { localeContext, getValidLocale } from '../locales/localeContext'
 
 const { app } = require('electron').remote;
 
@@ -24,9 +22,6 @@ const theme = createMuiTheme({
 
 function App() {
     const [locale, setLocale] = useState<string>('en');
-    const [url, setUrl] = useState<string>('');
-    const [chapterName, setChapterName] = useState<string>('');
-    const [outputDir, setOutputDir] = useState<string>('');
 
     useEffect(() => {
         // get system locale
@@ -59,33 +54,12 @@ function App() {
         changeLocale,
     }), [locale]);
 
-    const changeUrl = (newUrl: string) => {
-        setUrl(newUrl);
-    };
-
-    const changeOutputDir = (dir: string) => {
-        setOutputDir(dir);
-    };
-
-    const changeChapterName = (name: string) => {
-        setChapterName(name);
-    };
-
-    const chapterContextValue = {
-        url,
-        chapterName,
-        outputDir,
-        changeUrl,
-        changeChapterName,
-        changeOutputDir,
-    };
-
     const messages = locales[locale];
 
     return (
         <ThemeProvider theme={theme}>
-            <localeContext.Provider value={localeContextValue}>
-                <chapterContext.Provider value={chapterContextValue}>
+            <Provider store={store}>
+                <localeContext.Provider value={localeContextValue}> 
                     <Router>
                         <Switch>
                             <Route exact path="/" component={Home} />
@@ -95,8 +69,8 @@ function App() {
                             />
                         </Switch>
                     </Router>
-                </chapterContext.Provider>
-            </localeContext.Provider>
+                </localeContext.Provider>
+            </Provider>
         </ThemeProvider>
     );
 }

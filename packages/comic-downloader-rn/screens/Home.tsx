@@ -6,8 +6,9 @@ import MediaLibrary from 'expo-media-library'
 import * as Permissions from 'expo-permissions'
 import styled from 'styled-components/native'
 import { Button, TextInput } from 'react-native-paper'
+import { useSelector, useDispatch } from 'react-redux'
+import { StoreState, chapterSlice } from 'comic-downloader-core'
 import { RootStackParamList } from '.'
-import { chapterContext, ChapterContext } from '../ChapterContext'
 import locales from '../locales'
 import { LocaleContext, localeContext } from '../locales/LocaleContext'
 
@@ -18,16 +19,10 @@ interface Props {
 }
 
 export default function Home({ navigation }: Props) {
+    const dispatch = useDispatch();
+    const state: StoreState = useSelector((state: StoreState) => state);
     const { locale } = useContext(localeContext) as LocaleContext;
-    const { 
-        url,
-        chapterName,
-        albumName,
-        changeUrl,
-        changeChapterName,
-        changeAlbumName,
-    } = useContext(chapterContext) as ChapterContext;
-
+    
     const messages = locales[locale];
 
     const handleDownloadChapterPress = async () => {
@@ -42,18 +37,20 @@ export default function Home({ navigation }: Props) {
             }
         }
 
-        if (url.trim().length === 0) {
+        if (state.chapter.url.trim().length === 0) {
             Alert.alert(messages.forgotChapterUrl);
             return;
         }
 
         // regex that only allows for letters, numbers, space, underscore and slash
         const regex = /^([a-zA-Z0-9 _-]+)$/;
-        if (chapterName.trim().length > 0 && !regex.test(chapterName)) {
+        if (state.chapter.chapterName.trim().length > 0 && 
+            !regex.test(state.chapter.chapterName)) {
             Alert.alert(messages.invalidChapterName);
             return;
         }
-        if (albumName.trim().length > 0 && !regex.test(albumName)) {
+        if (state.chapter.albumName.trim().length > 0 && 
+            !regex.test(state.chapter.albumName)) {
             Alert.alert(messages.invalidAlbumName);
             return;
         }
@@ -66,24 +63,33 @@ export default function Home({ navigation }: Props) {
             <TextInputContainer>
                 <TextInput
                     label="Chapter URL"
-                    value={url}
-                    onChangeText={text => changeUrl(text)}
+                    value={state.chapter.url}
+                    textAlign=""
+                    onChangeText={text => {
+                        dispatch(chapterSlice.actions.setUrl(text));
+                    }}
                 />
             </TextInputContainer>
 
             <TextInputContainer>
                 <TextInput
                     label="Chapter name (optional)"
-                    value={chapterName}
-                    onChangeText={text => changeChapterName(text)}
+                    value={state.chapter.chapterName}
+                    textAlign=""
+                    onChangeText={text => {
+                        dispatch(chapterSlice.actions.setName(text));
+                    }}
                 />
             </TextInputContainer>
 
             <TextInputContainer>
                 <TextInput
                     label="Album name (optional)"
-                    value={albumName}
-                    onChangeText={text => changeAlbumName(text)}
+                    value={state.chapter.albumName}
+                    textAlign=""
+                    onChangeText={text => {
+                        dispatch(chapterSlice.actions.setAlbumName(text));
+                    }}
                 />
             </TextInputContainer>
 

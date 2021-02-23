@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar'
 import React, { useEffect, useState } from 'react'
 import {  Text, FlatList, View } from 'react-native'
 import { StackNavigationProp } from '@react-navigation/stack'
+import { useSelector, useDispatch } from 'react-redux'
 import styled from 'styled-components/native'
 import * as FileSystem from 'expo-file-system'
 import * as MediaLibrary from 'expo-media-library'
@@ -10,10 +11,10 @@ import Constants from 'expo-constants'
 import { downloadComic, WebsiteIsNotSupported } from 'comic-downloader-core'
 import { RootStackParamList } from '.'
 import { useContext } from 'react'
-import { chapterContext, ChapterContext } from '../ChapterContext'
 import { localeContext, LocaleContext } from '../locales/LocaleContext'
 import locales from '../locales'
 import filenamify from 'filenamify/filenamify'
+import { downloadSlice, DOWNLOAD_STATE, StoreState } from 'comic-downloader-core'
 
 type DownloadInfoScreenRouteProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -21,31 +22,21 @@ interface Props {
     navigation: DownloadInfoScreenRouteProp;
 }
 
-enum DOWNLOAD_STATE {
-    DOWNLOADING,
-    SUCCESS,
-    ERROR,
-}
-
 const chaptersDir = FileSystem.cacheDirectory + 'chapters/';
 const defaultAlbumName = 'Comic Downloader';
 
 export default function DownloadInfo({ navigation }: Props) {
+    const dispatch = useDispatch();
+    const state: StoreState = useSelector((state: StoreState) => state);
     const { locale } = useContext(localeContext) as LocaleContext;
-    const { 
-        url,
-        chapterName,
-        albumName,
-    } = useContext(chapterContext) as ChapterContext;
 
-    const [targetDir, setTargetDir] = useState<string>(chaptersDir + filenamify(url) + '/');
+    const dir = chaptersDir + filenamify(state.chapter.url) + '/';
+    
+    const [targetDir, setTargetDir] = useState<string>(dir);
     const [imageLinks, setImageLinks] = useState<string[]>([]);
     const [siteName, setSiteName] = useState<string>('');
-    const [downloadStates, setDownloadStates] = useState<DOWNLOAD_STATE[]>([]);
     const [areAllDownloadsComplete, setAreAllDownloadsComplete] = useState<boolean>(false);
-    const [logs, setLogs] = useState<string[]>([]);
     const [errorMsg, setErrorMsg] = useState<string>('');
-    const [completeDownloadsNumber, setCompleteDownloadsNumber] = useState<number>(0);
     const [isWebsiteSupported, setIsWebsiteSupported] = useState<boolean>(true);
     const [isSavedToGallery, setIsSavedToGallery] = useState<boolean>(false);
     const [isSavingToGallery, setIsSavingToGallery] = useState<boolean>(false);
@@ -59,23 +50,27 @@ export default function DownloadInfo({ navigation }: Props) {
                 console.error(e);
                 setErrorMsg(e.toString());
             });
+        
+        return () => {
+            dispatch(downloadSlice.actions.clearData());
+        };
     }, []);
 
     useEffect(() => {
         // checks if all pages have been downloaded
-        if (downloadStates.length === 0) {
+        if (state.download.downloadStates.length === 0) {
             return;
         }
         
         let isFinished = true;
-        for (const downloadState of downloadStates) {
+        for (const downloadState of state.download.downloadStates) {
             if (downloadState === DOWNLOAD_STATE.DOWNLOADING) {
                 isFinished = false;
             }
         }
 
         setAreAllDownloadsComplete(isFinished);
-    }, [downloadStates]);
+    }, [state.download.downloadStates]);
 
     useEffect(() => {
         if (areAllDownloadsComplete && !isSavedToGallery) {
@@ -94,12 +89,12 @@ export default function DownloadInfo({ navigation }: Props) {
         await ensureDirExists();
                 
         try {
-            let namePrefix = replaceAll(chapterName.trim(), ' ', '_');
+            let namePrefix = replaceAll(state.chapter.chapterName.trim(), ' ', '_');
             if (namePrefix.length > 0) {
                 namePrefix = `${namePrefix}-`
             }
             
-            let pageUrl = url.trim();
+            let pageUrl = state.chapter.url.trim();
             if (!pageUrl.startsWith('http')) {
                 pageUrl = `http://${pageUrl}`;
             }
@@ -109,13 +104,8 @@ export default function DownloadInfo({ navigation }: Props) {
             setImageLinks(res.images);
             setIsWebsiteSupported(true);
             
-            let localCompleteDownloads = 0; 
             const fileUris: string[] = new Array();
-            const localLogs: string[] = new Array();
-            const localDownloadStates: DOWNLOAD_STATE[] = new Array(res.images.length);
-            for (let i = 0; i < localDownloadStates.length; i++) {
-                localDownloadStates[i] = DOWNLOAD_STATE.DOWNLOADING;
-            }
+            dispatch(downloadSlice.actions.initDownloadStates(res.images.length));
             
             for (const imageLink of res.images) {
                 const i = res.images.indexOf(imageLink);
@@ -131,41 +121,34 @@ export default function DownloadInfo({ navigation }: Props) {
                 fileUris.push(fullPath);
                 downloadFile(imageLink, fullPath)
                     .then((url) => {
+                        console.log(state.download.completeDownloads);
                         const index = res.images.indexOf(url);
 
                         const log = messages.pageDownloadedSuccessfully
                             .replace('{fileName}', fileName);
                         
-                        localLogs.push(log);
-                        setLogs([
-                            ...localLogs,
-                        ]);
-                        
-                        localDownloadStates[index] = DOWNLOAD_STATE.SUCCESS;
-                        setDownloadStates([
-                            ...localDownloadStates,
-                        ]);
+                        dispatch(downloadSlice.actions.addLog(log));
 
-                        localCompleteDownloads += 1;
-                        setCompleteDownloadsNumber(localCompleteDownloads);
+                        dispatch(downloadSlice.actions.setDownloadState({
+                            index,
+                            downloadState: DOWNLOAD_STATE.SUCCESS,
+                        }));
+    
+                        dispatch(downloadSlice.actions.incrementCompleteDownloads());
                     })
                     .catch(([url, e]) => {
                         const index = res.images.indexOf(url);
 
                         console.warn(e);
         
-                        localLogs.push(String(e));
-                        setLogs([
-                            ...localLogs,
-                        ]);
+                        dispatch(downloadSlice.actions.addLog(String(e)));
 
-                        localDownloadStates[index] = DOWNLOAD_STATE.ERROR;
-                        setDownloadStates([
-                            ...localDownloadStates,
-                        ]);
+                        dispatch(downloadSlice.actions.setDownloadState({
+                            index,
+                            downloadState: DOWNLOAD_STATE.ERROR,
+                        }));
 
-                        localCompleteDownloads += 1;
-                        setCompleteDownloadsNumber(localCompleteDownloads);
+                        dispatch(downloadSlice.actions.incrementCompleteDownloads());
                     });
             }
 
@@ -183,12 +166,11 @@ export default function DownloadInfo({ navigation }: Props) {
     const moveFilesToGallery = async () => {
         setIsSavingToGallery(true);
 
-        let localLogs = [...logs, `${messages.savingToGallery}`];
-        setLogs(localLogs);
+        dispatch(downloadSlice.actions.addLog(messages.savingToGallery));
 
         let album = defaultAlbumName;
-        if (albumName.trim().length > 0) {
-            album = albumName;
+        if (state.chapter.albumName.trim().length > 0) {
+            album = state.chapter.albumName;
         }
 
         try {
@@ -225,7 +207,7 @@ export default function DownloadInfo({ navigation }: Props) {
     };
 
     const addAssetsToAlbum = async (albumName: string, assets: MediaLibrary.Asset[]): Promise<void> => {
-        let assetList = assets;
+        let assetList = [...assets];
         if (assetList.length === 0) {
             return;
         }
@@ -244,7 +226,7 @@ export default function DownloadInfo({ navigation }: Props) {
         navigation.replace('Home')
     };
 
-    const progress = (100 * completeDownloadsNumber) / imageLinks.length;
+    const progress = (100 * state.download.completeDownloads) / imageLinks.length;
 
     if (errorMsg.length > 0) {
         // show error message
@@ -268,10 +250,6 @@ export default function DownloadInfo({ navigation }: Props) {
         );
     };
 
-    const renderItem = ({ item }) => (
-        <Text>{item}</Text>
-    );
-
     return (
         <ViewContainer>
             <LargeText>
@@ -294,7 +272,7 @@ export default function DownloadInfo({ navigation }: Props) {
                 <>
                     <Text>{messages.DownloadingFiles}</Text>
                     <Text>
-                        {completeDownloadsNumber}/{imageLinks.length}
+                        {state.download.completeDownloads}/{imageLinks.length}
                     </Text>
                     <ProgressBarContainer>
                         <ProgressBar 

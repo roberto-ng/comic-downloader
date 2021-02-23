@@ -12,13 +12,17 @@
     "postinstall": "expo-yarn-workspaces postinstall"
   },
   "dependencies": {
+    "@babel/plugin-transform-runtime": "^7.12.17",
     "@react-native-community/masked-view": "0.1.10",
     "@react-navigation/native": "^5.9.2",
     "@react-navigation/stack": "^5.14.2",
     "@types/filenamify": "^2.0.2",
+    "@types/react-redux": "^7.1.16",
+    "@types/redux": "^3.6.0",
     "@types/styled-components": "^5.1.7",
     "@types/styled-components-react-native": "^5.1.1",
-    "comic-downloader-core": "1.0.0",
+    "babel-runtime": "^6.26.0",
+    "comic-downloader-core": "1.0.1",
     "expo": "~40.0.0",
     "expo-constants": "~9.3.3",
     "expo-file-system": "~9.3.0",
@@ -39,8 +43,11 @@
     "react-native-screens": "~2.15.2",
     "react-native-url-polyfill": "^1.2.0",
     "react-native-web": "~0.13.12",
+    "react-redux": "^7.2.2",
+    "redux": "^4.0.5",
     "stream": "^0.0.2",
-    "styled-components": "^5.2.1"
+    "styled-components": "^5.2.1",
+    "whatwg-fetch": "^3.6.1"
   },
   "devDependencies": {
     "@babel/core": "~7.9.0",

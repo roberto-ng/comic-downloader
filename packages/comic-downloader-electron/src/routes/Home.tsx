@@ -1,45 +1,40 @@
 import React, { useContext, useState } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import styled from 'styled-components'
 import Button from '@material-ui/core/Button'
 import TextField from '@material-ui/core/TextField';
 import { withRouter } from 'react-router-dom'
 import { localeContext } from '../locales/localeContext'
-import { chapterContext } from '../ChapterContext'
+import { StoreState, chapterSlice } from 'comic-downloader-core'
 import locales from '../locales'
 
 const { dialog, getCurrentWindow } = require('electron').remote;
 
 export default withRouter(({ history }) => {
+    const dispatch = useDispatch();
+    const state = useSelector((state: StoreState) => state);  
     const { locale } = useContext(localeContext);
-    const { 
-        url, 
-        chapterName,
-        outputDir, 
-        changeUrl, 
-        changeChapterName,
-        changeOutputDir,
-    } = useContext(chapterContext);
 
     const handleDownloadChapterClick = () => {        
-        if (url.trim().length === 0) {
+        if (state.chapter.url.trim().length === 0) {
             window.alert(messages.forgotChapterUrl);
             return;
         }
-        if (outputDir.trim().length === 0) {
+        if (state.chapter.outputDir.trim().length === 0) {
             window.alert(messages.forgotToChooseFolder);
             return;
         }
 
         // regex that only allows for letters, numbers, space, underscore and slash
         const regex = /^([a-zA-Z0-9 _-]+)$/;
-        if (chapterName.trim().length > 0 && 
-            !regex.test(chapterName)) {
+        if (state.chapter.chapterName.trim().length > 0 && 
+            !regex.test(state.chapter.chapterName)) {
             window.alert(messages.invalidChapterName);
             return;
         }
 
-        const encodedUrl = encodeURIComponent(url.trim());
-        const encodedDir = encodeURIComponent(outputDir.trim());
+        const encodedUrl = encodeURIComponent(state.chapter.url.trim());
+        const encodedDir = encodeURIComponent(state.chapter.outputDir.trim());
 
         const route = `/downloadinfo/${encodedUrl}/${encodedDir}`;
         history.push(route);
@@ -49,9 +44,9 @@ export default withRouter(({ history }) => {
         const mainWindow = getCurrentWindow();
 
         let defaultPath: string|undefined = undefined;
-        if (outputDir.trim().length > 0) {
+        if (state.chapter.outputDir.trim().length > 0) {
             // set the last selected folder as the default path
-            defaultPath = outputDir.trim();
+            defaultPath = state.chapter.outputDir.trim();
         }
 
         const result = await dialog.showOpenDialog(mainWindow, {
@@ -63,7 +58,7 @@ export default withRouter(({ history }) => {
             return;
         }
 
-        changeOutputDir(result.filePaths[0]);
+        dispatch(chapterSlice.actions.setOuputDir(result.filePaths[0]));
     };
 
     const messages = locales[locale];
@@ -72,11 +67,14 @@ export default withRouter(({ history }) => {
             <div>
                 <TextField 
                     label={messages.chapterUrl} 
-                    value={url}
+                    value={state.chapter.url}
                     variant="outlined" 
                     type="text"
                     fullWidth={true}
-                    onChange={e => changeUrl(e.target.value)} 
+                    onChange={e => {
+                        const url = e.target.value;
+                        dispatch(chapterSlice.actions.setUrl(url));
+                    }} 
                     style={textFieldStyle}
                 />
                 <br/>
@@ -84,19 +82,24 @@ export default withRouter(({ history }) => {
 
                 <TextField 
                     label={messages.chapterName} 
-                    value={chapterName}
+                    value={state.chapter.chapterName}
                     variant="outlined" 
                     type="text"
                     fullWidth={true}
-                    onChange={e => changeChapterName(e.target.value)} 
+                    onChange={e => {
+                        const name = e.target.value;
+                        dispatch(chapterSlice.actions.setName(name));
+                    }} 
                     style={textFieldStyle}
                 />
                 <br/>
 
-            {(outputDir === '') ? (
+            {(state.chapter.outputDir === '') ? (
                 <label>{messages.saveInNoFolder}</label>
             ) : (
-                <label>{messages.saveIn.replace('{outputDir}', outputDir)}</label>
+                <label>
+                    {messages.saveIn.replace('{outputDir}', state.chapter.outputDir)}
+                </label>
             )}
             <br/>
             <Button 
