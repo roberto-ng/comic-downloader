@@ -5,5 +5,10 @@
       "**/comic-downloader-electron/**"
     ]
   },
-  "private": true
+  "private": true,
+  "scripts": {
+    "build": "yarn workspace comic-downloader-core build",
+    "start": "yarn workspace comic-downloader-electron electron-forge start",
+    "package": "yarn workspace comic-downloader-electron electron-forge package"
+  }
 }
