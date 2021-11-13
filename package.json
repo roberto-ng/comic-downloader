@@ -9,6 +9,7 @@
   "scripts": {
     "build": "yarn workspace comic-downloader-core build",
     "start": "yarn workspace comic-downloader-electron electron-forge start",
-    "package": "yarn workspace comic-downloader-electron electron-forge package"
+    "package": "yarn workspace comic-downloader-electron electron-forge package",
+    "make": "yarn workspace comic-downloader-electron electron-forge make"
   }
 }
